@@ -121,7 +121,7 @@ export function setCarFormEnabled(enabled) {
   for (const id of ['edit-car-button', 'save-memo-button']) {
     document.getElementById(id).disabled = !enabled;
   }
-  for (const id of ['fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button']) {
+  for (const id of ['fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button', 'reset-fuel-usage-button']) {
     document.getElementById(id).disabled = !enabled;
   }
 }

@@ -146,6 +146,10 @@ h1, h2, h3, p { margin: 0; }
 .fuel-summary-dark strong { font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; }
 
 .data-section { margin-top: 25px; scroll-margin-top: 84px; }
+.fuel-reset-section { padding-top: 4px; }
+.fuel-reset-description { margin: -3px 0 11px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.fuel-reset-button { border-color: #e6c9cc; color: var(--danger); }
+.fuel-reset-button:disabled { opacity: .5; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 11px; }
 .section-heading h3 { font-size: 16px; font-weight: 650; letter-spacing: -.4px; }
 .data-card { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
