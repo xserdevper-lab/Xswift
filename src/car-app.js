@@ -106,8 +106,9 @@ export function setSyncState(state, message) {
 
 export function setCarFormEnabled(enabled) {
   document.getElementById('car-memo').disabled = !enabled;
-  for (const id of ['edit-car-button', 'save-memo-button', 'car-photo-button', 'license-photo-button']) {
+  for (const id of ['edit-car-button', 'save-memo-button']) {
     document.getElementById(id).disabled = !enabled;
   }
 }
+
 
