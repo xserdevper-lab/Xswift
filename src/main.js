@@ -1,4 +1,5 @@
 
+import { loginWithPin, getCar as getRemoteCar, saveCar as saveRemoteCar, clearSession } from './xswift-api.js?v=2';
 import { uploadCarImage } from './car-drive.js?v=2';
 import { syncCar, saveSyncedCar } from './car-sync.js?v=2';
 import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=3';
@@ -244,7 +245,61 @@ function setupInstallApp() {
   }
 }
 
+
+let sheetConnected = false;
+function sheetStatus(message) { const node = $('sheet-sync-status'); if(node) node.textContent = message; }
+function sheetControls(busy = false) {
+  for (const id of ['sheet-connect','sheet-pull','sheet-push','sheet-disconnect']) {
+    const node = $(id); if(node) node.disabled = busy;
+  }
+  $('sheet-sync-actions').hidden = !sheetConnected;
+}
+async function connectSheet() {
+  const pin = $('sheet-pin').value.trim();
+  if (!/^\\d{6}$/.test(pin)) { sheetStatus('Enter the private 6-digit PIN to connect.'); return; }
+  sheetControls(true); sheetStatus('Connecting to Google Sheets…');
+  try {
+    await loginWithPin(pin);
+    sheetConnected = true;
+    $('sheet-pin').value = '';
+    $('sheet-pin').hidden = true;
+    sheetStatus('Connected. No data has been downloaded or uploaded.');
+  } catch(e) { sheetStatus('Connection failed: ' + e.message); }
+  finally { sheetControls(false); }
+}
+async function pullSheet() {
+  if (!sheetConnected || !window.confirm('Replace vehicle details on this device with Google Sheets data? Local details will be overwritten. Photos are not included.')) return;
+  sheetControls(true); sheetStatus('Downloading from Google Sheets…');
+  try {
+    const remote = await getRemoteCar();
+    const next = { ...state.record, ...Object.fromEntries(Object.entries(remote).filter(([key]) => !['carImageFileId','licenseImageFileId'].includes(key))) };
+    await saveSyncedCar(config,next);
+    await loadVehicle();
+    sheetStatus('Vehicle details downloaded and saved on this device.');
+  } catch(e) { sheetStatus('Download failed: ' + e.message); }
+  finally { sheetControls(false); }
+}
+async function pushSheet() {
+  if (!sheetConnected || !state.record || !window.confirm('Overwrite vehicle details in Google Sheets with this device\'s details? Photos will not be uploaded.')) return;
+  sheetControls(true); sheetStatus('Uploading to Google Sheets…');
+  try {
+    const remote = await getRemoteCar();
+    const next = { ...remote, ...Object.fromEntries(Object.entries(state.record).filter(([key]) => !['carImageFileId','licenseImageFileId'].includes(key))) };
+    await saveRemoteCar(next);
+    sheetStatus('Vehicle details uploaded to Google Sheets.');
+  } catch(e) { sheetStatus('Upload failed: ' + e.message); }
+  finally { sheetControls(false); }
+}
+function disconnectSheet() {
+  clearSession(); sheetConnected = false; $('sheet-pin').hidden = false;
+  sheetControls(); sheetStatus('Disconnected. Local data is unchanged.');
+}
+
 function bindEvents() {
+  $('sheet-connect').addEventListener('click',connectSheet);
+  $('sheet-pull').addEventListener('click',pullSheet);
+  $('sheet-push').addEventListener('click',pushSheet);
+  $('sheet-disconnect').addEventListener('click',disconnectSheet);
   const tabs = [...document.querySelectorAll('[role="tab"][data-tab-target]')];
   tabs.forEach((tab, index) => {
     tab.addEventListener('click', () => activateTab(tab));
