@@ -1,5 +1,5 @@
-import { loadCar, saveCar } from './car-sheets.js?v=1';
-import { loadCarImage } from './car-drive.js?v=1';
+import { loadCar, saveCar } from './car-sheets.js?v=2';
+import { loadCarImage } from './car-drive.js?v=2';
 
 export async function syncCar() {
   const record = await loadCar();
