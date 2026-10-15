@@ -21,7 +21,7 @@ function setBusy(busy) {
   $('sign-in-button').disabled = busy || !requireConfig();
   $('connect-button').disabled = busy || !requireConfig();
   $('sign-out-button').disabled = busy || !connected;
-  for (const id of ['edit-car-button', 'save-memo-button', 'car-photo-button', 'license-photo-button', 'save-car-button']) {
+  for (const id of ['edit-car-button', 'save-memo-button', 'save-car-button']) {
     $(id).disabled = busy || !connected;
   }
   $('car-content').classList.toggle('is-loading', busy);
@@ -230,8 +230,6 @@ function bindEvents() {
   $('car-form').addEventListener('submit', saveCarDetails);
   $('save-memo-button').addEventListener('click', saveMemo);
   document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => $('car-modal').close()));
-  $('car-photo-button').addEventListener('click', () => $('car-img-input').click());
-  $('license-photo-button').addEventListener('click', () => $('license-img-input').click());
   $('car-img-input').addEventListener('change', event => {
     replacePhoto(event.target.files[0], 'carImageFileId', 'car-img-preview', 'car-img-placeholder');
     event.target.value = '';
@@ -279,6 +277,7 @@ async function initialize() {
 }
 
 initialize();
+
 
 
 
