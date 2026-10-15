@@ -1,7 +1,7 @@
 const FORM_FIELDS = {
   model: 'ce-model', plate: 'ce-plate', price: 'ce-price', taxRenew: 'ce-tax-renew',
   taxExpire: 'ce-tax-expire', insType: 'ce-ins-type', insYear: 'ce-ins-year',
-  insExpire: 'ce-ins-expire', licenseExpire: 'ce-license-expire'
+  insExpire: 'ce-ins-expire', licenseExpire: 'ce-license-expire', batteryDate: 'ce-battery-date'
 };
 
 const INSURANCE_TYPES = new Map([
@@ -66,6 +66,7 @@ export function renderCar(record = {}) {
   put('car-ins-type', insuranceType ? `${insuranceType}${record.insYear ? ` · ${record.insYear}` : ''}` : '—');
   put('car-ins-expire', formatDate(record.insExpire));
   put('car-license-expire', formatDate(record.licenseExpire));
+  put('car-battery-date', formatDate(record.batteryDate));
   putStatus('car-tax-status', record.taxExpire);
   putStatus('car-ins-status', record.insExpire);
   putStatus('car-license-status', record.licenseExpire);
