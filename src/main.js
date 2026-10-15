@@ -1,4 +1,4 @@
-import { loginWithPin, restoreSession, clearSession, isSessionError } from './xswift-api.js?v=1';
+import { loginWithPin, restoreSession, clearSession, isSessionError } from './xswift-api.js?v=2';
 import { uploadCarImage } from './car-drive.js?v=1';
 import { syncCar, saveSyncedCar } from './car-sync.js?v=1';
 import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=3';
