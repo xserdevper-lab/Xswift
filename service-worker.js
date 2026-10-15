@@ -1,4 +1,4 @@
-const CACHE_NAME = 'xswift-shell-v17';
+const CACHE_NAME = 'xswift-shell-v18';
 const APP_ROOT = new URL('./', self.registration.scope);
 const SHELL_FILES = [
   './',
@@ -43,17 +43,23 @@ self.addEventListener('fetch', event => {
 
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(request);
-    try {
-      const response = await fetch(request);
-      if (response.ok) await cache.put(request, response.clone());
-      return response;
-    } catch (error) {
-      if (cached) return cached;
-      if (request.mode === 'navigate') {
-        return (await cache.match(APP_ROOT.toString())) || (await cache.match(new URL('./index.html', APP_ROOT).toString()));
+    if (request.mode === 'navigate') {
+      try {
+        const fresh = await fetch(request, { cache: 'no-store' });
+        if (fresh.ok) await cache.put(request, fresh.clone());
+        return fresh;
+      } catch (_) {
+        return (await cache.match(request)) || (await cache.match(new URL('./index.html', APP_ROOT).toString()));
       }
-      throw error;
+    }
+    try {
+      const fresh = await fetch(request, { cache: 'no-store' });
+      if (fresh.ok) await cache.put(request, fresh.clone());
+      return fresh;
+    } catch (_) {
+      const cached = await cache.match(request);
+      if (cached) return cached;
+      throw new Error('Offline resource unavailable');
     }
   })());
 });
