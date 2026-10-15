@@ -31,7 +31,12 @@ function setBusy(busy) {
   $('car-content').classList.toggle('is-loading', busy);
 }
 function requireConfig() {
-  return /^https:\/\/script\\.google\\.com\\/macros\\/s\\/[^/]+\\/exec$/.test(String(config.appsScriptUrl || ''));
+  try {
+    const url = new URL(String(config.appsScriptUrl || ''));
+    return url.protocol === 'https:' && url.hostname === 'script.google.com' && /^\/macros\/s\/[^/]+\/exec$/.test(url.pathname);
+  } catch (_) {
+    return false;
+  }
 }
 
 async function loadVehicle() {
@@ -196,7 +201,7 @@ async function importLegacyFile(file) {
     const imported = parseLegacyCar(await file.text());
     const hasCarData = Object.values(imported.record).some(value => value.trim()) || imported.carImage || imported.licenseImage;
     if (!hasCarData) throw new Error('This file does not contain vehicle data.');
-    if (!window.confirm('Import this vehicle data and replace the current record in Google Sheets?')) return;
+    if (!window.confirm('Import this vehicle data and replace the current Xswift vehicle record?')) return;
     const next = { ...state.record, ...imported.record };
     if (imported.carImage) {
       const blob = await (await fetch(imported.carImage)).blob();
