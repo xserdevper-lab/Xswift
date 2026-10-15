@@ -1,12 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#fff"/>
-  <g fill="none" stroke="#111" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Crossed road lanes form the X brand mark. -->
-    <path d="M108 112 404 400M404 112 108 400" stroke-width="54"/>
-    <path d="M108 112 404 400M404 112 108 400" stroke="#fff" stroke-width="9" stroke-dasharray="27 31"/>
-    <!-- A compact car roof silhouette sits at the center of the crossing. -->
-    <path d="M174 263 197 242l27-30c8-9 18-13 31-13h38c14 0 24 5 34 15l24 25 23 9c8 3 13 10 13 19v18h-21a27 27 0 0 0-53 0h-82a27 27 0 0 0-53 0h-20v-17c0-8 5-15 13-19z" fill="#fff" stroke-width="12"/>
-    <circle cx="238" cy="286" r="16" fill="#fff" stroke-width="10"/>
-    <circle cx="340" cy="286" r="16" fill="#fff" stroke-width="10"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" fill="#fff"/>
+  <rect width="192" height="192" rx="51" fill="#171717"/>
+  <g fill="#fff">
+    <path d="M35 70h25l-3 5H35zm5 11h18l-3 5H40zm4 11h12l-3 5h-9z"/>
+  </g>
+  <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m60 109 2-8 6-7 13-17c3-4 8-6 13-6h12c7 0 12 2 17 7l11 12 12 4c5 2 8 6 8 11v5c0 5-3 9-7 11l-4 2" stroke-width="4"/>
+    <circle cx="78" cy="109" r="9" fill="#171717" stroke-width="4"/>
+    <circle cx="134" cy="109" r="9" fill="#171717" stroke-width="4"/>
+    <path d="M87 109h38" stroke-width="4"/>
   </g>
 </svg>
