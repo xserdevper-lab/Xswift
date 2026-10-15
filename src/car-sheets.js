@@ -53,7 +53,7 @@ export async function ensureCarSheet(accessToken, spreadsheetId) {
       method: 'PUT', body: JSON.stringify({ range: tabRange(`A1:B${initialRows.length}`), majorDimension: 'ROWS', values: initialRows })
     });
   } else if (rows[0]?.[0] !== 'key' || rows[0]?.[1] !== 'value') {
-    throw new Error(`The “${TAB_NAME}” sheet tab has an unexpected format. It was not changed.`);
+    throw new Error('The vehicle sheet tab has an unexpected format. It was not changed.');
   }
   return sheet.properties.sheetId;
 }
