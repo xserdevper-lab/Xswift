@@ -2,7 +2,7 @@
 import { loginWithPin, getCar as getRemoteCar, saveCar as saveRemoteCar, clearSession } from './xswift-api.js?v=2';
 import { uploadCarImage } from './car-drive.js?v=2';
 import { syncCar, saveSyncedCar } from './car-sync.js?v=2';
-import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=3';
+import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=5';
 import { parseLegacyCar } from './legacy-import.js';
 
 const config = window.XSWIFT_CONFIG || {};
