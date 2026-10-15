@@ -164,21 +164,21 @@ export function setPhotoPreview(id, placeholderId, source) {
 
 export function setSyncState(state, message) {
   const status = document.getElementById('sync-status');
-  status.dataset.state = state;
-  status.textContent = message;
-  if (state === 'connected') document.getElementById('car-content').dataset.connected = 'true';
-  if (state === 'disconnected') document.getElementById('car-content').dataset.connected = 'false';
-  const connected = document.getElementById('car-content').dataset.connected === 'true';
-  const panel = document.getElementById('connection-panel');
+  if (status) {
+    status.dataset.state = state;
+    status.textContent = message;
+  }
   const content = document.getElementById('car-content');
-  panel.hidden = connected;
+  if (state === 'connected') content.dataset.connected = 'true';
+  if (state === 'disconnected') content.dataset.connected = 'false';
+  const connected = content.dataset.connected === 'true';
+  const panel = document.getElementById('connection-panel');
+  if (panel) panel.hidden = connected;
   content.hidden = !connected;
-  document.getElementById('sign-in-button').hidden = connected && state !== 'error';
-  document.getElementById('sign-in-button').textContent = connected ? 'Reconnect Google' : 'Connect Google';
-  document.getElementById('sign-out-button').hidden = !connected;
-  document.getElementById('settings-account-status').textContent = connected ? 'Connected to Google Sheets and Drive' : 'Not connected';
-  document.getElementById('settings-connect-button').hidden = connected;
-  document.getElementById('connect-button').hidden = connected;
+  const signOutButton = document.getElementById('sign-out-button');
+  if (signOutButton) signOutButton.hidden = !connected;
+  const accountStatus = document.getElementById('settings-account-status');
+  if (accountStatus) accountStatus.textContent = connected ? 'Session active in this tab' : 'No active session';
 }
 
 export function setCarFormEnabled(enabled) {
