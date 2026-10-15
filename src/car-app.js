@@ -80,7 +80,8 @@ export function renderCar(record = {}) {
   put('fuel-progress-center', formatBaht(fuelSpent));
   put('fuel-spent-display', `${formatBaht(fuelSpent)} spent`);
   put('fuel-used-percent', `${fuelUsedPercent}%`);
-  document.getElementById('fuel-progress-fill').style.width = `${fuelProgressPercent}%`;
+  const fuelProgressFill = document.getElementById('fuel-progress-fill');
+  if (fuelProgressFill) fuelProgressFill.style.width = `${fuelProgressPercent}%`;
   document.getElementById('fuel-progress').setAttribute('aria-valuenow', String(fuelProgressPercent));
   document.getElementById('fuel-limit-input').value = String(fuelLimit);
   const maintenanceProgressFill = document.getElementById('maintenance-progress-fill');
