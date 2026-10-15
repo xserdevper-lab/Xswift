@@ -85,6 +85,10 @@ h1, h2, h3, p { margin: 0; }
 .connection-panel h2 { font-size: 15px; font-weight: 650; letter-spacing: -.2px; }
 .connection-panel p { margin-top: 4px; color: var(--muted); font-size: 11px; line-height: 1.45; }
 .connection-panel .button { margin-left: auto; flex: none; }
+.pin-form { display: grid; flex: 1 0 100%; gap: 7px; margin-left: 55px; color: var(--muted); font-size: 11px; }
+.pin-form-row { display: flex; gap: 8px; }
+.pin-form-row input { min-width: 0; flex: 1; height: 42px; padding: 0 12px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink); font: 600 16px system-ui, sans-serif; letter-spacing: .16em; }
+.pin-form-row input:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
 
 .car-content { padding: 2px 0 0; }
 .car-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 0 16px; scroll-margin-top: 56px; }
@@ -275,7 +279,7 @@ h1, h2, h3, p { margin: 0; }
 .dialog-actions .button { flex: 1; }
 .is-loading { opacity: .6; pointer-events: none; }
 
-@media (max-width: 430px) {
+@media (max-width: 430px) { .pin-form { margin-left: 0; } .pin-form-row .button { width: auto; margin-left: 0; flex: 0 0 auto; }
   .app-shell { padding-right: 18px; padding-left: 18px; }
   .header-actions { gap: 5px; }
   .sync-status { font-size: 9px; }
