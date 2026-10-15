@@ -190,8 +190,8 @@
       <label class="form-field">Driver's license expiration date<input id="ce-license-expire" name="licenseExpire" type="date"></label>
       <label class="form-field">Battery replacement date<input id="ce-battery-date" name="batteryDate" type="date"></label>
       <div class="form-row">
-        <label class="form-field">Last service center visit<input id="ce-maintenance-date" name="maintenanceDate" type="date"></label>
-        <label class="form-field">Maintenance interval (months)<input id="ce-maintenance-interval" name="maintenanceIntervalMonths" type="number" min="1" max="60" step="1" inputmode="numeric" placeholder="e.g. 6"></label>
+        <label class="form-field">Maintenance ล่าสุด (เดือน/ปี)<input id="ce-maintenance-date" name="maintenanceDate" type="month"></label>
+        <label class="form-field">รอบ Maintenance ถัดไป (เดือน)<input id="ce-maintenance-interval" name="maintenanceIntervalMonths" type="number" min="1" max="60" step="1" inputmode="numeric" placeholder="6" value="6"></label>
       </div>
       <div class="dialog-actions"><button class="button button-outline" type="button" data-close-dialog>Cancel</button><button id="save-car-button" class="button button-red" type="submit">Save details</button></div>
     </form>
