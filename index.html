@@ -24,22 +24,7 @@
       </div>
     </header>
 
-    <section id="connection-panel" class="connection-panel" aria-labelledby="connection-title">
-      <div class="connection-mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><path d="M3 14h18l-1.6-5a2 2 0 0 0-1.9-1.4H6.5A2 2 0 0 0 4.6 9L3 14Z"/><path d="M5 14v4m14-4v4M7 18h10M6 11h12"/><circle cx="7" cy="16" r="1"/><circle cx="17" cy="16" r="1"/></svg>
-      </div>
-      <div>
-        <h2 id="connection-title">Unlock Xswift</h2>
-        <p id="connection-message">Enter your private PIN to access this vehicle.</p>
-      </div>
-      <form id="pin-form" class="pin-form">
-        <label for="pin-input">6-digit app PIN</label>
-        <div class="pin-form-row">
-          <input id="pin-input" type="password" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="••••••" required>
-          <button id="pin-submit-button" class="button button-dark" type="submit">Unlock</button>
-        </div>
-      </form>
-    </section>
+    <section id="connection-panel" hidden><h2 id="connection-title">Local storage</h2><p id="connection-message"></p><form id="pin-form" hidden><input id="pin-input"><button id="pin-submit-button">Unlock</button></form></section>
 
     <section id="car-content" class="car-content" hidden aria-label="Vehicle information">
       <section id="panel-car" class="tab-panel" data-tab-panel="car" role="tabpanel" aria-labelledby="tab-car" tabindex="0">
