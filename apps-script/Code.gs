@@ -69,7 +69,7 @@ function handleLogin_(candidate) {
   if (properties.getProperty('XSWIFT_SETUP_COMPLETE') !== 'true') {
     throw apiError_('SETUP_REQUIRED', 'The Xswift backend has not been configured by its owner.');
   }
-  if (candidate.length < 1 || candidate.length > 32) throw apiError_('INVALID_PIN', 'PIN was not accepted. Try again later.');
+  if (!/^\d{6}$/.test(candidate)) throw apiError_('INVALID_PIN', 'PIN was not accepted. Try again later.');
 
   const cache = CacheService.getScriptCache();
   if (cache.get('xswift-pin-lock') === '1') throw apiError_('PIN_COOLDOWN', 'PIN was not accepted. Try again later.');
@@ -278,7 +278,7 @@ function parsePayload_(value) {
 
 function generatePin_() {
   const hex = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
-  return hex.slice(0, 10).split('').map(character => String(parseInt(character, 16) % 10)).join('');
+  return hex.slice(0, 6).split('').map(character => String(parseInt(character, 16) % 10)).join('');
 }
 
 function apiError_(code, message) {
