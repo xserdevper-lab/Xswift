@@ -1,9 +1,9 @@
-const CACHE_NAME = 'xswift-shell-v23';
+const CACHE_NAME = 'xswift-shell-v24';
 const APP_ROOT = new URL('./', self.registration.scope);
 const SHELL_FILES = [
   './',
   './index.html',
-  './manifest.webmanifest',
+  './manifest.webmanifest?v=2',
   './config.js?v=6',
   './src/styles.css?v=16',
   './src/main.js?v=23',
@@ -13,7 +13,7 @@ const SHELL_FILES = [
   './src/car-sync.js?v=2',
   './src/xswift-api.js?v=2',
   './src/legacy-import.js',
-  './icons/xswift-icon.svg',
+  './icons/xswift-icon.svg?v=2',
   './icons/xswift-180.png',
   './icons/xswift-192.png',
   './icons/xswift-512.png',
