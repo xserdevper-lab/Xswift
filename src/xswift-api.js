@@ -74,7 +74,7 @@ async function post(fields) {
 }
 
 export async function loginWithPin(pin) {
-  if (!/^\d{10}$/.test(String(pin || ''))) throw new XswiftApiError('INVALID_PIN', 'Enter the 10-digit PIN shown during owner setup.');
+  if (!/^\d{6}$/.test(String(pin || ''))) throw new XswiftApiError('INVALID_PIN', 'Enter the 6-digit PIN shown during owner setup.');
   const result = await post({ action: 'login', pin: String(pin) });
   if (!result.token || !Number.isFinite(Number(result.expiresAt))) {
     throw new XswiftApiError('BACKEND_RESPONSE', 'The Xswift backend did not return a valid session.');
