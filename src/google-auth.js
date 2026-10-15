@@ -79,6 +79,35 @@ export function requestAccessToken() {
   return promise;
 }
 
+export function refreshAccessTokenSilently() {
+  if (!tokenClient) return Promise.reject(new Error('ระบบลงชื่อเข้าใช้ Google ยังไม่พร้อม'));
+  if (pendingRequest) return pendingRequest.promise;
+
+  let resolveRequest;
+  let rejectRequest;
+  const promise = new Promise((resolve, reject) => {
+    resolveRequest = resolve;
+    rejectRequest = reject;
+  });
+  pendingRequest = { promise, resolve: resolveRequest, reject: rejectRequest };
+  pendingRequest.timeout = window.setTimeout(() => {
+    const request = pendingRequest;
+    pendingRequest = null;
+    request?.reject(new Error('ต่ออายุเซสชัน Google ไม่สำเร็จ'));
+  }, 15000);
+  try {
+    tokenClient.requestAccessToken({ prompt: 'none' });
+  } catch (error) {
+    const request = pendingRequest;
+    pendingRequest = null;
+    if (request) {
+      window.clearTimeout(request.timeout);
+      request.reject(error);
+    }
+  }
+  return promise;
+}
+
 export function getAccessToken() {
   if (!currentToken || Date.now() >= tokenExpiresAt) {
     currentToken = '';
@@ -95,3 +124,4 @@ export function signOut() {
   currentToken = '';
   tokenExpiresAt = 0;
 }
+

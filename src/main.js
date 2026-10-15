@@ -1,4 +1,4 @@
-import { initializeGoogleAuth, requestAccessToken, getAccessToken, signOut } from './google-auth.js';
+import { initializeGoogleAuth, requestAccessToken, refreshAccessTokenSilently, getAccessToken, signOut } from './google-auth.js';
 import { uploadCarImage } from './car-drive.js';
 import { syncCar, saveSyncedCar } from './car-sync.js';
 import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js';
@@ -252,6 +252,17 @@ async function initialize() {
   }
   try {
     await initializeGoogleAuth(config.googleClientId);
+    try {
+      await refreshAccessTokenSilently();
+      $('connection-panel').hidden = true;
+      $('sign-in-button').hidden = true;
+      $('sign-out-button').hidden = false;
+      $('car-content').hidden = false;
+      await loadVehicle();
+    } catch {
+      // Google may require an explicit user gesture after a long idle period.
+      // Keep the connect action visible in that case.
+    }
   } catch (error) {
     $('connection-message').textContent = error.message;
     $('sign-in-button').disabled = true;
@@ -261,5 +272,6 @@ async function initialize() {
 }
 
 initialize();
+
 
 
