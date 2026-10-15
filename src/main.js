@@ -209,7 +209,7 @@ async function importLegacyFile(file) {
     }
     if (imported.licenseImage) {
       const blob = await (await fetch(imported.licenseImage)).blob();
-      next.licenseImageFileId = (await uploadCarImage(token, blob)).fileId;
+      next.licenseImageFileId = (await uploadCarImage(blob)).fileId;
     }
     await saveRecord(next, 'Vehicle data imported.');
     renderCar(next);
