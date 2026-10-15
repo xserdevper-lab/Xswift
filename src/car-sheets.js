@@ -1,7 +1,7 @@
 const TAB_NAME = 'รถยนต์';
 export const CAR_FIELDS = [
   'model', 'plate', 'price', 'taxRenew', 'taxExpire', 'insType', 'insYear',
-  'insExpire', 'licenseExpire', 'batteryDate', 'oilChangeDate', 'oilChangeIntervalMonths',
+  'insExpire', 'licenseExpire', 'batteryDate', 'maintenanceDate', 'maintenanceIntervalMonths',
   'memo', 'carImageFileId', 'licenseImageFileId', 'fuelLimit', 'fuelSpent'
 ];
 
@@ -63,8 +63,15 @@ export async function loadCar(accessToken, spreadsheetId) {
   await ensureCarSheet(accessToken, spreadsheetId);
   const rows = await readRows(accessToken, spreadsheetId);
   const record = Object.fromEntries(CAR_FIELDS.map(field => [field, '']));
+  const storedKeys = new Set(rows.slice(1).map(([key]) => key));
   for (const [key, value] of rows.slice(1)) {
     if (CAR_FIELDS.includes(key)) record[key] = value ?? '';
+  }
+  if (!storedKeys.has('maintenanceDate') && storedKeys.has('oilChangeDate')) {
+    record.maintenanceDate = rows.slice(1).find(([key]) => key === 'oilChangeDate')?.[1] ?? '';
+  }
+  if (!storedKeys.has('maintenanceIntervalMonths') && storedKeys.has('oilChangeIntervalMonths')) {
+    record.maintenanceIntervalMonths = rows.slice(1).find(([key]) => key === 'oilChangeIntervalMonths')?.[1] ?? '';
   }
   return record;
 }
