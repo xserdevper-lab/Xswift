@@ -1,6 +1,6 @@
-import { loginWithPin, restoreSession, clearSession, isSessionError } from './xswift-api.js?v=2';
-import { uploadCarImage } from './car-drive.js?v=1';
-import { syncCar, saveSyncedCar } from './car-sync.js?v=1';
+
+import { uploadCarImage } from './car-drive.js?v=2';
+import { syncCar, saveSyncedCar } from './car-sync.js?v=2';
 import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=3';
 import { parseLegacyCar } from './legacy-import.js';
 
@@ -30,14 +30,7 @@ function setBusy(busy) {
   }
   $('car-content').classList.toggle('is-loading', busy);
 }
-function requireConfig() {
-  try {
-    const url = new URL(String(config.appsScriptUrl || ''));
-    return url.protocol === 'https:' && url.hostname === 'script.google.com' && /^\/macros\/s\/[^/]+\/exec$/.test(url.pathname);
-  } catch (_) {
-    return false;
-  }
-}
+function requireConfig() { return true; }
 
 async function loadVehicle() {
   setBusy(true);
@@ -52,43 +45,10 @@ async function loadVehicle() {
     setSyncState('connected', 'Connected');
     if (result.imageErrors) toast('Vehicle data loaded, but some photos could not be loaded.');
   } catch (error) {
-    if (isSessionError(error)) {
-      clearSession();
-      state.record = null;
-      setPhotoPreview('car-img-preview', 'car-img-placeholder', '');
-      setPhotoPreview('car-license-img', 'license-img-placeholder', '');
-      setCarFormEnabled(false);
-      setSyncState('disconnected', 'PIN required');
-      $('connection-message').textContent = 'Your app session expired. Enter your PIN again.';
-    } else {
-      setSyncState('error', 'Sync failed');
-      $('connection-message').textContent = `${error.message} Your vehicle data is still available to retry.`;
-      setCarFormEnabled(false);
-    }
+    setSyncState('error', 'Local storage error');
+    $('connection-message').textContent = error.message;
     toast(error.message);
     throw error;
-  } finally {
-    setBusy(false);
-  }
-}
-
-async function unlockWithPin(event) {
-  event.preventDefault();
-  if (!requireConfig()) {
-    toast('The Apps Script backend URL is not configured yet.');
-    return;
-  }
-  const pin = $('pin-input').value.trim();
-  setBusy(true);
-  try {
-    await loginWithPin(pin);
-    $('pin-input').value = '';
-    await loadVehicle();
-  } catch (error) {
-    if (!isSessionError(error)) {
-      setSyncState('disconnected', 'PIN required');
-      $('connection-message').textContent = error.message;
-    }
   } finally {
     setBusy(false);
   }
@@ -214,8 +174,8 @@ async function importLegacyFile(file) {
     await saveRecord(next, 'Vehicle data imported.');
     renderCar(next);
     const [carPhoto, licensePhoto] = await Promise.allSettled([
-      next.carImageFileId ? import('./car-drive.js?v=1').then(({ loadCarImage }) => loadCarImage(next.carImageFileId)) : '',
-      next.licenseImageFileId ? import('./car-drive.js?v=1').then(({ loadCarImage }) => loadCarImage(next.licenseImageFileId)) : ''
+      next.carImageFileId ? import('./car-drive.js?v=2').then(({ loadCarImage }) => loadCarImage(next.carImageFileId)) : '',
+      next.licenseImageFileId ? import('./car-drive.js?v=2').then(({ loadCarImage }) => loadCarImage(next.licenseImageFileId)) : ''
     ]);
     setPhotoPreview('car-img-preview', 'car-img-placeholder', carPhoto.status === 'fulfilled' ? carPhoto.value : '');
     setPhotoPreview('car-license-img', 'license-img-placeholder', licensePhoto.status === 'fulfilled' ? licensePhoto.value : '');
@@ -225,16 +185,6 @@ async function importLegacyFile(file) {
   } finally {
     $('legacy-file-input').value = '';
   }
-}
-
-function signOutXswift() {
-  clearSession();
-  state.record = null;
-  setPhotoPreview('car-img-preview', 'car-img-placeholder', '');
-  setPhotoPreview('car-license-img', 'license-img-placeholder', '');
-  setCarFormEnabled(false);
-  $('connection-message').textContent = 'Enter your Xswift PIN to view and update vehicle data.';
-  setSyncState('disconnected', 'PIN required');
 }
 
 function setToday() {
@@ -309,8 +259,8 @@ function bindEvents() {
       activateTab(tabs[nextIndex], true);
     });
   });
-  $('pin-form').addEventListener('submit', unlockWithPin);
-  $('sign-out-button').addEventListener('click', signOutXswift);
+
+
   $('edit-car-button').addEventListener('click', () => {
     renderCar(state.record);
     $('car-modal').showModal();
@@ -342,19 +292,6 @@ async function initialize() {
   setupInstallApp();
   bindEvents();
   setCarFormEnabled(false);
-  if (!requireConfig()) {
-    $('connection-title').textContent = 'Setup required';
-    $('connection-message').textContent = 'The Apps Script backend URL has not been configured yet.';
-    $('pin-form').hidden = true;
-    $('pin-input').disabled = true;
-    $('pin-submit-button').disabled = true;
-    setSyncState('error', 'Setup required');
-    return;
-  }
-  if (!restoreSession()) {
-    setSyncState('disconnected', 'PIN required');
-    return;
-  }
   try {
     await loadVehicle();
   } catch (_) {
