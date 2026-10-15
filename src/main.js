@@ -1,7 +1,7 @@
-import { initializeGoogleAuth, requestAccessToken, refreshAccessTokenSilently, getAccessToken, signOut } from './google-auth.js';
-import { uploadCarImage } from './car-drive.js';
-import { syncCar, saveSyncedCar } from './car-sync.js';
-import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=2';
+import { loginWithPin, restoreSession, clearSession, isSessionError } from './xswift-api.js?v=1';
+import { uploadCarImage } from './car-drive.js?v=1';
+import { syncCar, saveSyncedCar } from './car-sync.js?v=1';
+import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=3';
 import { parseLegacyCar } from './legacy-import.js';
 
 const config = window.XSWIFT_CONFIG || {};
@@ -18,26 +18,27 @@ function toast(message) {
 
 function setBusy(busy) {
   const connected = Boolean(state.record);
-  $('sign-in-button').disabled = busy || !requireConfig();
-  $('connect-button').disabled = busy || !requireConfig();
-  $('sign-out-button').disabled = busy || !connected;
+  const pinInput = $('pin-input');
+  const pinButton = $('pin-submit-button');
+  const signOutButton = $('sign-out-button');
+  if (pinInput) pinInput.disabled = busy;
+  if (pinButton) pinButton.disabled = busy || !requireConfig();
+  if (signOutButton) signOutButton.disabled = busy || !connected;
   for (const id of ['edit-car-button', 'save-memo-button', 'save-car-button', 'fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button', 'reset-fuel-usage-button']) {
     const control = $(id);
     if (control) control.disabled = busy || !connected;
   }
   $('car-content').classList.toggle('is-loading', busy);
 }
-
 function requireConfig() {
-  return Boolean(config.googleClientId && !config.googleClientId.startsWith('YOUR_') && config.spreadsheetId);
+  return /^https:\/\/script\\.google\\.com\\/macros\\/s\\/[^/]+\\/exec$/.test(String(config.appsScriptUrl || ''));
 }
 
 async function loadVehicle() {
   setBusy(true);
   setSyncState('loading', 'Loading vehicle data…');
   try {
-    const token = getAccessToken();
-    const result = await syncCar(token, config);
+    const result = await syncCar(config);
     state.record = result.record;
     renderCar(state.record);
     setPhotoPreview('car-img-preview', 'car-img-placeholder', result.carImageUrl);
@@ -46,48 +47,53 @@ async function loadVehicle() {
     setSyncState('connected', 'Connected');
     if (result.imageErrors) toast('Vehicle data loaded, but some photos could not be loaded.');
   } catch (error) {
-    setSyncState('error', 'Connection failed');
-    $('connection-message').textContent = `${error.message} Check your Sheets access and try again.`;
+    if (isSessionError(error)) {
+      clearSession();
+      state.record = null;
+      setPhotoPreview('car-img-preview', 'car-img-placeholder', '');
+      setPhotoPreview('car-license-img', 'license-img-placeholder', '');
+      setCarFormEnabled(false);
+      setSyncState('disconnected', 'PIN required');
+      $('connection-message').textContent = 'Your app session expired. Enter your PIN again.';
+    } else {
+      setSyncState('error', 'Sync failed');
+      $('connection-message').textContent = `${error.message} Your vehicle data is still available to retry.`;
+      setCarFormEnabled(false);
+    }
     toast(error.message);
-    setCarFormEnabled(false);
+    throw error;
   } finally {
     setBusy(false);
   }
 }
 
-async function connectGoogle() {
+async function unlockWithPin(event) {
+  event.preventDefault();
   if (!requireConfig()) {
-    toast('Set the Google OAuth Client ID in config.js first.');
+    toast('The Apps Script backend URL is not configured yet.');
     return;
   }
-  const retainedForm = state.record ? readCarForm() : null;
-  const retainedMemo = state.record ? $('car-memo').value : '';
+  const pin = $('pin-input').value.trim();
   setBusy(true);
   try {
-    await requestAccessToken();
+    await loginWithPin(pin);
+    $('pin-input').value = '';
     await loadVehicle();
-    if (retainedForm && state.record) {
-      for (const [field, value] of Object.entries(retainedForm)) {
-        const input = document.querySelector(`[name="${field}"]`);
-        if (input) input.value = value;
-      }
-      $('car-memo').value = retainedMemo;
-    }
   } catch (error) {
-    setSyncState('error', 'Not connected');
-    $('connection-message').textContent = error.message;
-    toast(error.message);
+    if (!isSessionError(error)) {
+      setSyncState('disconnected', 'PIN required');
+      $('connection-message').textContent = error.message;
+    }
   } finally {
     setBusy(false);
   }
 }
 
 async function saveRecord(record, successMessage = 'Saved.') {
-  const token = getAccessToken();
   setBusy(true);
-    setSyncState('saving', 'Saving…');
+  setSyncState('saving', 'Saving…');
   try {
-    await saveSyncedCar(token, config, record);
+    await saveSyncedCar(config, record);
     state.record = { ...record };
     setSyncState('connected', 'Synced');
     toast(successMessage);
@@ -167,10 +173,9 @@ async function replacePhoto(file, key, imageId, placeholderId) {
   setBusy(true);
   setSyncState('saving', 'Uploading photo…');
   try {
-    const token = getAccessToken();
-    const { fileId } = await uploadCarImage(token, file);
+    const { fileId } = await uploadCarImage(file);
     const next = { ...state.record, [key]: fileId };
-    await saveSyncedCar(token, config, next);
+    await saveSyncedCar(config, next);
     state.record = next;
     const objectUrl = URL.createObjectURL(file);
     setPhotoPreview(imageId, placeholderId, objectUrl);
@@ -193,10 +198,9 @@ async function importLegacyFile(file) {
     if (!hasCarData) throw new Error('This file does not contain vehicle data.');
     if (!window.confirm('Import this vehicle data and replace the current record in Google Sheets?')) return;
     const next = { ...state.record, ...imported.record };
-    const token = getAccessToken();
     if (imported.carImage) {
       const blob = await (await fetch(imported.carImage)).blob();
-      next.carImageFileId = (await uploadCarImage(token, blob)).fileId;
+      next.carImageFileId = (await uploadCarImage(blob)).fileId;
     }
     if (imported.licenseImage) {
       const blob = await (await fetch(imported.licenseImage)).blob();
@@ -205,8 +209,8 @@ async function importLegacyFile(file) {
     await saveRecord(next, 'Vehicle data imported.');
     renderCar(next);
     const [carPhoto, licensePhoto] = await Promise.allSettled([
-      next.carImageFileId ? import('./car-drive.js').then(({ loadCarImage }) => loadCarImage(token, next.carImageFileId)) : '',
-      next.licenseImageFileId ? import('./car-drive.js').then(({ loadCarImage }) => loadCarImage(token, next.licenseImageFileId)) : ''
+      next.carImageFileId ? import('./car-drive.js?v=1').then(({ loadCarImage }) => loadCarImage(next.carImageFileId)) : '',
+      next.licenseImageFileId ? import('./car-drive.js?v=1').then(({ loadCarImage }) => loadCarImage(next.licenseImageFileId)) : ''
     ]);
     setPhotoPreview('car-img-preview', 'car-img-placeholder', carPhoto.status === 'fulfilled' ? carPhoto.value : '');
     setPhotoPreview('car-license-img', 'license-img-placeholder', licensePhoto.status === 'fulfilled' ? licensePhoto.value : '');
@@ -218,14 +222,14 @@ async function importLegacyFile(file) {
   }
 }
 
-function signOutGoogle() {
-  signOut();
+function signOutXswift() {
+  clearSession();
   state.record = null;
   setPhotoPreview('car-img-preview', 'car-img-placeholder', '');
   setPhotoPreview('car-license-img', 'license-img-placeholder', '');
   setCarFormEnabled(false);
-  $('connection-message').textContent = 'Connect to view and save vehicle data in Google Sheets.';
-  setSyncState('disconnected', 'Not connected');
+  $('connection-message').textContent = 'Enter your Xswift PIN to view and update vehicle data.';
+  setSyncState('disconnected', 'PIN required');
 }
 
 function setToday() {
@@ -300,10 +304,8 @@ function bindEvents() {
       activateTab(tabs[nextIndex], true);
     });
   });
-  $('sign-in-button').addEventListener('click', connectGoogle);
-  $('connect-button').addEventListener('click', connectGoogle);
-  $('settings-connect-button').addEventListener('click', connectGoogle);
-  $('sign-out-button').addEventListener('click', signOutGoogle);
+  $('pin-form').addEventListener('submit', unlockWithPin);
+  $('sign-out-button').addEventListener('click', signOutXswift);
   $('edit-car-button').addEventListener('click', () => {
     renderCar(state.record);
     $('car-modal').showModal();
@@ -336,30 +338,20 @@ async function initialize() {
   bindEvents();
   setCarFormEnabled(false);
   if (!requireConfig()) {
-    $('connection-message').textContent = 'Set the Google OAuth Client ID in config.js before connecting.';
-    $('sign-in-button').disabled = true;
-    $('connect-button').disabled = true;
-    setSyncState('error', 'Google setup required');
+    $('connection-message').textContent = 'The Apps Script backend URL is not configured yet.';
+    $('pin-input').disabled = true;
+    $('pin-submit-button').disabled = true;
+    setSyncState('error', 'Setup required');
+    return;
+  }
+  if (!restoreSession()) {
+    setSyncState('disconnected', 'PIN required');
     return;
   }
   try {
-    await initializeGoogleAuth(config.googleClientId);
-    try {
-      await refreshAccessTokenSilently();
-      $('connection-panel').hidden = true;
-      $('sign-in-button').hidden = true;
-      $('sign-out-button').hidden = false;
-      $('car-content').hidden = false;
-      await loadVehicle();
-    } catch {
-      // Google may require an explicit user gesture after a long idle period.
-      // Keep the connect action visible in that case.
-    }
-  } catch (error) {
-    $('connection-message').textContent = error.message;
-    $('sign-in-button').disabled = true;
-    $('connect-button').disabled = true;
-    setSyncState('error', 'Google unavailable');
+    await loadVehicle();
+  } catch (_) {
+    // loadVehicle has already updated the visible state and kept retry data available.
   }
 }
 
