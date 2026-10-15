@@ -21,7 +21,7 @@ function setBusy(busy) {
   $('sign-in-button').disabled = busy || !requireConfig();
   $('connect-button').disabled = busy || !requireConfig();
   $('sign-out-button').disabled = busy || !connected;
-  for (const id of ['edit-car-button', 'save-memo-button', 'save-car-button', 'fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button']) {
+  for (const id of ['edit-car-button', 'save-memo-button', 'save-car-button', 'fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button', 'reset-fuel-usage-button']) {
     $(id).disabled = busy || !connected;
   }
   $('car-content').classList.toggle('is-loading', busy);
@@ -143,6 +143,20 @@ async function saveFuelLimit(event) {
   const next = { ...state.record, fuelLimit: String(fuelLimit) };
   try {
     await saveRecord(next, 'Fuel budget saved.');
+    renderCar(next);
+  } catch {}
+}
+
+async function resetFuelUsage() {
+  if (!state.record) return;
+  if (!(Number(state.record.fuelSpent) > 0)) {
+    toast('Fuel usage is already zero.');
+    return;
+  }
+  if (!window.confirm('Reset fuel usage to ฿0? Your fuel budget limit and other vehicle data will stay unchanged.')) return;
+  const next = { ...state.record, fuelSpent: '0' };
+  try {
+    await saveRecord(next, 'Fuel usage reset.');
     renderCar(next);
   } catch {}
 }
@@ -298,6 +312,7 @@ function bindEvents() {
   $('fuel-add-button').addEventListener('click', () => $('fuel-dialog').showModal());
   $('fuel-form').addEventListener('submit', addFuelExpense);
   $('fuel-settings-form').addEventListener('submit', saveFuelLimit);
+  $('reset-fuel-usage-button').addEventListener('click', resetFuelUsage);
   document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => $('car-modal').close()));
   document.querySelectorAll('[data-close-fuel-dialog]').forEach(button => button.addEventListener('click', () => $('fuel-dialog').close()));
   $('car-img-input').addEventListener('change', event => {
