@@ -1,6 +1,5 @@
-// Public app configuration. Replace the placeholder OAuth Client ID before use.
-// Never add a Google OAuth client secret or access token to this file.
+// Public app configuration. Client IDs are public by design; never add a client secret or access token here.
 window.XSWIFT_CONFIG = {
-  googleClientId: "YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+  googleClientId: "711476540211-qlea6n0a5ifmcocoueibkpe5qaakkl94.apps.googleusercontent.com",
   spreadsheetId: "1xxaLYpoQvzXhIzkHllMToVo-SKeM4TKNik7kqDbKID4"
 };
