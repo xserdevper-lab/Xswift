@@ -30,6 +30,7 @@ export async function initializeGoogleAuth(clientId) {
       const request = pendingRequest;
       pendingRequest = null;
       if (!request) return;
+      window.clearTimeout(request.timeout);
       if (response.error || !response.access_token) {
         currentToken = '';
         tokenExpiresAt = 0;
@@ -43,6 +44,7 @@ export async function initializeGoogleAuth(clientId) {
     error_callback: error => {
       const request = pendingRequest;
       pendingRequest = null;
+      if (request) window.clearTimeout(request.timeout);
       if (request) request.reject(new Error(error?.message || 'กรุณาอนุญาตการเชื่อมต่อ Google'));
     }
   });
@@ -59,7 +61,21 @@ export function requestAccessToken() {
     rejectRequest = reject;
   });
   pendingRequest = { promise, resolve: resolveRequest, reject: rejectRequest };
-  tokenClient.requestAccessToken({ prompt: '' });
+  pendingRequest.timeout = window.setTimeout(() => {
+    const request = pendingRequest;
+    pendingRequest = null;
+    request?.reject(new Error('ยังไม่ได้อนุญาต Google กรุณากดเชื่อมต่อแล้วลองอีกครั้ง'));
+  }, 60000);
+  try {
+    tokenClient.requestAccessToken({ prompt: '' });
+  } catch (error) {
+    const request = pendingRequest;
+    pendingRequest = null;
+    if (request) {
+      window.clearTimeout(request.timeout);
+      request.reject(error);
+    }
+  }
   return promise;
 }
 

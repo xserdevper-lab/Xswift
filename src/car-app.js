@@ -88,7 +88,8 @@ export function setSyncState(state, message) {
   const content = document.getElementById('car-content');
   panel.hidden = connected;
   content.hidden = !connected;
-  document.getElementById('sign-in-button').hidden = connected;
+  document.getElementById('sign-in-button').hidden = connected && state !== 'error';
+  document.getElementById('sign-in-button').textContent = connected ? 'เชื่อมต่อใหม่' : 'เชื่อมต่อ Google';
   document.getElementById('sign-out-button').hidden = !connected;
   document.getElementById('connect-button').hidden = connected;
 }

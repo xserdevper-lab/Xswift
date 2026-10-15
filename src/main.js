@@ -59,10 +59,19 @@ async function connectGoogle() {
     toast('กรุณาตั้งค่า Google OAuth Client ID ใน config.js');
     return;
   }
+  const retainedForm = state.record ? readCarForm() : null;
+  const retainedMemo = state.record ? $('car-memo').value : '';
   setBusy(true);
   try {
     await requestAccessToken();
     await loadVehicle();
+    if (retainedForm && state.record) {
+      for (const [field, value] of Object.entries(retainedForm)) {
+        const input = document.querySelector(`[name="${field}"]`);
+        if (input) input.value = value;
+      }
+      $('car-memo').value = retainedMemo;
+    }
   } catch (error) {
     setSyncState('error', 'ยังไม่ได้เชื่อมต่อ');
     $('connection-message').textContent = error.message;
