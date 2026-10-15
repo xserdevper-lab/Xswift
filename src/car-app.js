@@ -83,6 +83,8 @@ export function renderCar(record = {}) {
   document.getElementById('fuel-progress-fill').style.width = `${fuelProgressPercent}%`;
   document.getElementById('fuel-progress').setAttribute('aria-valuenow', String(fuelProgressPercent));
   document.getElementById('fuel-limit-input').value = String(fuelLimit);
+  const maintenanceProgressFill = document.getElementById('maintenance-progress-fill');
+  const maintenanceProgress = document.getElementById('maintenance-progress');
   const maintenanceDate = record.maintenanceDate ? new Date(`${record.maintenanceDate}T00:00:00`) : null;
   const maintenanceIntervalMonths = Math.floor(Number(record.maintenanceIntervalMonths));
   const hasMaintenanceSchedule = maintenanceDate && !Number.isNaN(maintenanceDate.getTime()) && maintenanceIntervalMonths > 0;
@@ -108,13 +110,13 @@ export function renderCar(record = {}) {
     }
     put('maintenance-status', maintenanceStatus);
     put('maintenance-next-date', `Next service: ${formatDate(dateValue(nextMaintenanceDate))}`);
-    document.getElementById('maintenance-progress-fill').style.width = `${elapsed}%`;
-    document.getElementById('maintenance-progress').setAttribute('aria-valuenow', String(Math.round(elapsed)));
+    if (maintenanceProgressFill) maintenanceProgressFill.style.width = `${elapsed}%`;
+    if (maintenanceProgress) maintenanceProgress.setAttribute('aria-valuenow', String(Math.round(elapsed)));
   } else {
     put('maintenance-status', 'Not set');
     put('maintenance-next-date', 'Set in Edit details');
-    document.getElementById('maintenance-progress-fill').style.width = '0%';
-    document.getElementById('maintenance-progress').setAttribute('aria-valuenow', '0');
+    if (maintenanceProgressFill) maintenanceProgressFill.style.width = '0%';
+    if (maintenanceProgress) maintenanceProgress.setAttribute('aria-valuenow', '0');
   }
   put('car-tax-renew', `Renewal: ${formatDate(record.taxRenew)}`);
   put('car-tax-expire', formatDate(record.taxExpire));
@@ -128,14 +130,19 @@ export function renderCar(record = {}) {
   putStatus('car-license-status', record.licenseExpire);
   document.getElementById('car-memo').value = record.memo || '';
   for (const [field, id] of Object.entries(FORM_FIELDS)) {
-    document.getElementById(id).value = field === 'insType'
+    const input = document.getElementById(id);
+    if (!input) continue;
+    input.value = field === 'insType'
       ? (INSURANCE_TYPES.get(record[field]) || record[field] || '')
       : record[field] ?? '';
   }
 }
 
 export function readCarForm() {
-  return Object.fromEntries(Object.entries(FORM_FIELDS).map(([field, id]) => [field, document.getElementById(id).value.trim()]));
+  return Object.fromEntries(Object.entries(FORM_FIELDS).flatMap(([field, id]) => {
+    const input = document.getElementById(id);
+    return input ? [[field, input.value.trim()]] : [];
+  }));
 }
 
 export function setPhotoPreview(id, placeholderId, source) {
@@ -176,10 +183,12 @@ export function setSyncState(state, message) {
 export function setCarFormEnabled(enabled) {
   document.getElementById('car-memo').disabled = !enabled;
   for (const id of ['edit-car-button', 'save-memo-button']) {
-    document.getElementById(id).disabled = !enabled;
+    const control = document.getElementById(id);
+    if (control) control.disabled = !enabled;
   }
-  for (const id of ['fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button', 'reset-fuel-usage-button']) {
-    document.getElementById(id).disabled = !enabled;
+  for (const id of ['fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button', 'reset-fuel-usage-button', 'ce-maintenance-date', 'ce-maintenance-interval']) {
+    const control = document.getElementById(id);
+    if (control) control.disabled = !enabled;
   }
 }
 

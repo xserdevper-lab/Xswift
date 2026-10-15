@@ -22,7 +22,8 @@ function setBusy(busy) {
   $('connect-button').disabled = busy || !requireConfig();
   $('sign-out-button').disabled = busy || !connected;
   for (const id of ['edit-car-button', 'save-memo-button', 'save-car-button', 'fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button', 'reset-fuel-usage-button']) {
-    $(id).disabled = busy || !connected;
+    const control = $(id);
+    if (control) control.disabled = busy || !connected;
   }
   $('car-content').classList.toggle('is-loading', busy);
 }
