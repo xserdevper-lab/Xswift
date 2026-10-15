@@ -1,6 +1,6 @@
-// Copy this file to config.js and enter the OAuth Client ID from Google Cloud.
-// Both values are public identifiers; never put a client secret or access token here.
+// Copy this file to config.js after deploying the Xswift Apps Script web app.
+// The endpoint URL is public. Never put the private PIN or signing secret here.
 window.XSWIFT_CONFIG = {
-  googleClientId: "YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+  appsScriptUrl: "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec",
   spreadsheetId: "1xxaLYpoQvzXhIzkHllMToVo-SKeM4TKNik7kqDbKID4"
 };
