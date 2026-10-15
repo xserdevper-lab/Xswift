@@ -2,7 +2,7 @@ async function driveRequest(url, accessToken, options = {}) {
   const response = await fetch(url, { ...options, headers: { Authorization: `Bearer ${accessToken}`, ...options.headers } });
   if (!response.ok) {
     const detail = await response.text().catch(() => '');
-    let message = `Google Drive ตอบกลับ (${response.status})`;
+    let message = `Google Drive returned an error (${response.status})`;
     try { message = JSON.parse(detail).error?.message || message; } catch {}
     throw new Error(message);
   }
@@ -10,7 +10,7 @@ async function driveRequest(url, accessToken, options = {}) {
 }
 
 export async function uploadCarImage(accessToken, file) {
-  if (!(file instanceof Blob)) throw new Error('ไม่พบไฟล์รูปภาพ');
+  if (!(file instanceof Blob)) throw new Error('No image file was selected.');
   const boundary = `xswift_${crypto.randomUUID().replaceAll('-', '')}`;
   const metadata = { name: `xswift-${Date.now()}-${file.name || 'photo'}`, mimeType: file.type || 'image/jpeg' };
   const prefix = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n--${boundary}\r\nContent-Type: ${metadata.mimeType}\r\n\r\n`;
@@ -21,7 +21,7 @@ export async function uploadCarImage(accessToken, file) {
     body: new Blob([prefix, file, suffix])
   });
   const fileInfo = await response.json();
-  if (!fileInfo.id) throw new Error('อัปโหลดรูปไม่สำเร็จ');
+  if (!fileInfo.id) throw new Error('Could not upload the photo.');
   return { fileId: fileInfo.id };
 }
 
@@ -30,3 +30,4 @@ export async function loadCarImage(accessToken, fileId) {
   const response = await driveRequest(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`, accessToken);
   return URL.createObjectURL(await response.blob());
 }
+

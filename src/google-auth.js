@@ -13,7 +13,7 @@ function waitForGoogleIdentity(timeoutMs = 12000) {
     const startedAt = Date.now();
     const poll = () => {
       if (window.google?.accounts?.oauth2) return resolve(window.google.accounts.oauth2);
-      if (Date.now() - startedAt > timeoutMs) return reject(new Error('โหลดระบบลงชื่อเข้าใช้ Google ไม่สำเร็จ กรุณาลองใหม่'));
+      if (Date.now() - startedAt > timeoutMs) return reject(new Error('Could not load Google sign-in. Please try again.'));
       window.setTimeout(poll, 100);
     };
     poll();
@@ -21,7 +21,7 @@ function waitForGoogleIdentity(timeoutMs = 12000) {
 }
 
 export async function initializeGoogleAuth(clientId) {
-  if (!clientId || clientId.startsWith('YOUR_')) throw new Error('กรุณาตั้งค่า Google OAuth Client ID ในไฟล์ config.js');
+  if (!clientId || clientId.startsWith('YOUR_')) throw new Error('Set the Google OAuth Client ID in config.js.');
   const oauth2 = await waitForGoogleIdentity();
   tokenClient = oauth2.initTokenClient({
     client_id: clientId,
@@ -34,7 +34,7 @@ export async function initializeGoogleAuth(clientId) {
       if (response.error || !response.access_token) {
         currentToken = '';
         tokenExpiresAt = 0;
-        request.reject(new Error(response.error_description || 'เชื่อมต่อบัญชี Google ไม่สำเร็จ'));
+        request.reject(new Error(response.error_description || 'Could not connect to Google.'));
         return;
       }
       currentToken = response.access_token;
@@ -45,13 +45,13 @@ export async function initializeGoogleAuth(clientId) {
       const request = pendingRequest;
       pendingRequest = null;
       if (request) window.clearTimeout(request.timeout);
-      if (request) request.reject(new Error(error?.message || 'กรุณาอนุญาตการเชื่อมต่อ Google'));
+      if (request) request.reject(new Error(error?.message || 'Please allow Google access.'));
     }
   });
 }
 
 export function requestAccessToken() {
-  if (!tokenClient) return Promise.reject(new Error('ระบบลงชื่อเข้าใช้ Google ยังไม่พร้อม'));
+  if (!tokenClient) return Promise.reject(new Error('Google sign-in is not ready yet.'));
   if (pendingRequest) return pendingRequest.promise;
 
   let resolveRequest;
@@ -64,7 +64,7 @@ export function requestAccessToken() {
   pendingRequest.timeout = window.setTimeout(() => {
     const request = pendingRequest;
     pendingRequest = null;
-    request?.reject(new Error('ยังไม่ได้อนุญาต Google กรุณากดเชื่อมต่อแล้วลองอีกครั้ง'));
+    request?.reject(new Error('Google access was not granted. Press Connect and try again.'));
   }, 60000);
   try {
     tokenClient.requestAccessToken({ prompt: '' });
@@ -80,7 +80,7 @@ export function requestAccessToken() {
 }
 
 export function refreshAccessTokenSilently() {
-  if (!tokenClient) return Promise.reject(new Error('ระบบลงชื่อเข้าใช้ Google ยังไม่พร้อม'));
+  if (!tokenClient) return Promise.reject(new Error('Google sign-in is not ready yet.'));
   if (pendingRequest) return pendingRequest.promise;
 
   let resolveRequest;
@@ -93,7 +93,7 @@ export function refreshAccessTokenSilently() {
   pendingRequest.timeout = window.setTimeout(() => {
     const request = pendingRequest;
     pendingRequest = null;
-    request?.reject(new Error('ต่ออายุเซสชัน Google ไม่สำเร็จ'));
+    request?.reject(new Error('Could not refresh the Google session.'));
   }, 15000);
   try {
     tokenClient.requestAccessToken({ prompt: 'none' });
@@ -112,7 +112,7 @@ export function getAccessToken() {
   if (!currentToken || Date.now() >= tokenExpiresAt) {
     currentToken = '';
     tokenExpiresAt = 0;
-    throw new Error('เซสชัน Google หมดอายุ กรุณาเชื่อมต่ออีกครั้ง');
+    throw new Error('Your Google session expired. Please reconnect.');
   }
   return currentToken;
 }
@@ -124,4 +124,5 @@ export function signOut() {
   currentToken = '';
   tokenExpiresAt = 0;
 }
+
 

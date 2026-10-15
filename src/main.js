@@ -33,7 +33,7 @@ function requireConfig() {
 
 async function loadVehicle() {
   setBusy(true);
-  setSyncState('loading', 'กำลังโหลดข้อมูล');
+  setSyncState('loading', 'Loading vehicle data…');
   try {
     const token = getAccessToken();
     const result = await syncCar(token, config);
@@ -42,11 +42,11 @@ async function loadVehicle() {
     setPhotoPreview('car-img-preview', 'car-img-placeholder', result.carImageUrl);
     setPhotoPreview('car-license-img', 'license-img-placeholder', result.licenseImageUrl);
     setCarFormEnabled(true);
-    setSyncState('connected', 'เชื่อมต่อแล้ว');
-    if (result.imageErrors) toast('โหลดข้อมูลรถแล้ว แต่โหลดรูปบางรายการไม่สำเร็จ');
+    setSyncState('connected', 'Connected');
+    if (result.imageErrors) toast('Vehicle data loaded, but some photos could not be loaded.');
   } catch (error) {
-    setSyncState('error', 'เชื่อมต่อไม่สำเร็จ');
-    $('connection-message').textContent = `${error.message} ตรวจสิทธิ์ชีตและลองเชื่อมต่ออีกครั้ง`;
+    setSyncState('error', 'Connection failed');
+    $('connection-message').textContent = `${error.message} Check your Sheets access and try again.`;
     toast(error.message);
     setCarFormEnabled(false);
   } finally {
@@ -56,7 +56,7 @@ async function loadVehicle() {
 
 async function connectGoogle() {
   if (!requireConfig()) {
-    toast('กรุณาตั้งค่า Google OAuth Client ID ใน config.js');
+    toast('Set the Google OAuth Client ID in config.js first.');
     return;
   }
   const retainedForm = state.record ? readCarForm() : null;
@@ -73,7 +73,7 @@ async function connectGoogle() {
       $('car-memo').value = retainedMemo;
     }
   } catch (error) {
-    setSyncState('error', 'ยังไม่ได้เชื่อมต่อ');
+    setSyncState('error', 'Not connected');
     $('connection-message').textContent = error.message;
     toast(error.message);
   } finally {
@@ -81,19 +81,19 @@ async function connectGoogle() {
   }
 }
 
-async function saveRecord(record, successMessage = 'บันทึกแล้ว') {
+async function saveRecord(record, successMessage = 'Saved.') {
   const token = getAccessToken();
   setBusy(true);
-  setSyncState('saving', 'กำลังบันทึก');
+    setSyncState('saving', 'Saving…');
   try {
     await saveSyncedCar(token, config, record);
     state.record = { ...record };
-    setSyncState('connected', 'ซิงก์แล้ว');
+    setSyncState('connected', 'Synced');
     toast(successMessage);
   } catch (error) {
-    setSyncState('error', 'บันทึกไม่สำเร็จ');
-    $('connection-message').textContent = `${error.message} ข้อมูลที่แก้ไว้ยังอยู่ ลองบันทึกอีกครั้ง`;
-    toast(`บันทึกไม่สำเร็จ: ${error.message}`);
+    setSyncState('error', 'Save failed');
+    $('connection-message').textContent = `${error.message} Your changes are still here. Please try again.`;
+    toast(`Save failed: ${error.message}`);
     throw error;
   } finally {
     setBusy(false);
@@ -104,7 +104,7 @@ async function saveCarDetails(event) {
   event.preventDefault();
   const next = { ...state.record, ...readCarForm() };
   try {
-    await saveRecord(next, 'บันทึกข้อมูลรถแล้ว');
+    await saveRecord(next, 'Vehicle details saved.');
     renderCar(next);
     $('car-modal').close();
   } catch {}
@@ -112,13 +112,13 @@ async function saveCarDetails(event) {
 
 async function saveMemo() {
   const next = { ...state.record, memo: $('car-memo').value };
-  try { await saveRecord(next, 'บันทึกแล้ว'); } catch {}
+  try { await saveRecord(next, 'Saved.'); } catch {}
 }
 
 async function replacePhoto(file, key, imageId, placeholderId) {
   if (!file) return;
   setBusy(true);
-  setSyncState('saving', 'กำลังอัปโหลดรูป');
+  setSyncState('saving', 'Uploading photo…');
   try {
     const token = getAccessToken();
     const { fileId } = await uploadCarImage(token, file);
@@ -127,12 +127,12 @@ async function replacePhoto(file, key, imageId, placeholderId) {
     state.record = next;
     const objectUrl = URL.createObjectURL(file);
     setPhotoPreview(imageId, placeholderId, objectUrl);
-    setSyncState('connected', 'ซิงก์แล้ว');
-    toast('อัปโหลดรูปแล้ว');
+    setSyncState('connected', 'Synced');
+    toast('Photo updated.');
   } catch (error) {
-    setSyncState('error', 'อัปโหลดไม่สำเร็จ');
-    $('connection-message').textContent = `${error.message} รูปเดิมยังใช้งานได้ ลองใหม่อีกครั้ง`;
-    toast(`อัปโหลดรูปไม่สำเร็จ: ${error.message}`);
+    setSyncState('error', 'Upload failed');
+    $('connection-message').textContent = `${error.message} Your previous photo is still available. Please try again.`;
+    toast(`Photo upload failed: ${error.message}`);
   } finally {
     setBusy(false);
   }
@@ -143,8 +143,8 @@ async function importLegacyFile(file) {
   try {
     const imported = parseLegacyCar(await file.text());
     const hasCarData = Object.values(imported.record).some(value => value.trim()) || imported.carImage || imported.licenseImage;
-    if (!hasCarData) throw new Error('ไฟล์นี้ยังไม่มีข้อมูลรถให้นำเข้า');
-    if (!window.confirm('นำเข้าข้อมูลรถจากไฟล์นี้และบันทึกทับข้อมูลรถใน Google Sheets หรือไม่?')) return;
+    if (!hasCarData) throw new Error('This file does not contain vehicle data.');
+    if (!window.confirm('Import this vehicle data and replace the current record in Google Sheets?')) return;
     const next = { ...state.record, ...imported.record };
     const token = getAccessToken();
     if (imported.carImage) {
@@ -155,7 +155,7 @@ async function importLegacyFile(file) {
       const blob = await (await fetch(imported.licenseImage)).blob();
       next.licenseImageFileId = (await uploadCarImage(token, blob)).fileId;
     }
-    await saveRecord(next, 'นำเข้าข้อมูลรถแล้ว');
+    await saveRecord(next, 'Vehicle data imported.');
     renderCar(next);
     const [carPhoto, licensePhoto] = await Promise.allSettled([
       next.carImageFileId ? import('./car-drive.js').then(({ loadCarImage }) => loadCarImage(token, next.carImageFileId)) : '',
@@ -163,9 +163,9 @@ async function importLegacyFile(file) {
     ]);
     setPhotoPreview('car-img-preview', 'car-img-placeholder', carPhoto.status === 'fulfilled' ? carPhoto.value : '');
     setPhotoPreview('car-license-img', 'license-img-placeholder', licensePhoto.status === 'fulfilled' ? licensePhoto.value : '');
-    if (carPhoto.status === 'rejected' || licensePhoto.status === 'rejected') toast('นำเข้าข้อมูลแล้ว แต่โหลดรูปบางรายการไม่สำเร็จ');
+    if (carPhoto.status === 'rejected' || licensePhoto.status === 'rejected') toast('Data imported, but some photos could not be loaded.');
   } catch (error) {
-    toast(`นำเข้าไม่สำเร็จ: ${error.message}`);
+    toast(`Import failed: ${error.message}`);
   } finally {
     $('legacy-file-input').value = '';
   }
@@ -177,15 +177,13 @@ function signOutGoogle() {
   setPhotoPreview('car-img-preview', 'car-img-placeholder', '');
   setPhotoPreview('car-license-img', 'license-img-placeholder', '');
   setCarFormEnabled(false);
-  $('connection-message').textContent = 'ลงชื่อเข้าใช้เพื่อดูและบันทึกข้อมูลรถจาก Google Sheets';
-  setSyncState('disconnected', 'ยังไม่ได้เชื่อมต่อ');
+  $('connection-message').textContent = 'Connect to view and save vehicle data in Google Sheets.';
+  setSyncState('disconnected', 'Not connected');
 }
 
 function setToday() {
   const date = new Date();
-  const day = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'][date.getDay()];
-  const month = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'][date.getMonth()];
-  $('today-date').textContent = `วัน${day} ${date.getDate()} ${month}`;
+  $('today-date').textContent = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).format(date);
 }
 
 function activateTab(activeTab, focusTab = false) {
@@ -223,6 +221,7 @@ function bindEvents() {
   });
   $('sign-in-button').addEventListener('click', connectGoogle);
   $('connect-button').addEventListener('click', connectGoogle);
+  $('settings-connect-button').addEventListener('click', connectGoogle);
   $('sign-out-button').addEventListener('click', signOutGoogle);
   $('edit-car-button').addEventListener('click', () => {
     renderCar(state.record);
@@ -233,8 +232,16 @@ function bindEvents() {
   document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => $('car-modal').close()));
   $('car-photo-button').addEventListener('click', () => $('car-img-input').click());
   $('license-photo-button').addEventListener('click', () => $('license-img-input').click());
-  $('car-img-input').addEventListener('change', event => replacePhoto(event.target.files[0], 'carImageFileId', 'car-img-preview', 'car-img-placeholder'));
-  $('license-img-input').addEventListener('change', event => replacePhoto(event.target.files[0], 'licenseImageFileId', 'car-license-img', 'license-img-placeholder'));
+  $('car-img-input').addEventListener('change', event => {
+    replacePhoto(event.target.files[0], 'carImageFileId', 'car-img-preview', 'car-img-placeholder');
+    event.target.value = '';
+  });
+  $('license-img-input').addEventListener('change', event => {
+    replacePhoto(event.target.files[0], 'licenseImageFileId', 'car-license-img', 'license-img-placeholder');
+    event.target.value = '';
+  });
+  $('settings-car-photo').addEventListener('click', () => $('car-img-input').click());
+  $('settings-license-photo').addEventListener('click', () => $('license-img-input').click());
   $('import-legacy-button').addEventListener('click', () => $('legacy-file-input').click());
   $('legacy-file-input').addEventListener('change', event => importLegacyFile(event.target.files[0]));
 }
@@ -244,10 +251,10 @@ async function initialize() {
   bindEvents();
   setCarFormEnabled(false);
   if (!requireConfig()) {
-    $('connection-message').textContent = 'ตั้งค่า Google OAuth Client ID ใน config.js ก่อนเชื่อมต่อ';
+    $('connection-message').textContent = 'Set the Google OAuth Client ID in config.js before connecting.';
     $('sign-in-button').disabled = true;
     $('connect-button').disabled = true;
-    setSyncState('error', 'รอตั้งค่า Google');
+    setSyncState('error', 'Google setup required');
     return;
   }
   try {
@@ -267,11 +274,12 @@ async function initialize() {
     $('connection-message').textContent = error.message;
     $('sign-in-button').disabled = true;
     $('connect-button').disabled = true;
-    setSyncState('error', 'Google ไม่พร้อมใช้งาน');
+    setSyncState('error', 'Google unavailable');
   }
 }
 
 initialize();
+
 
 
 

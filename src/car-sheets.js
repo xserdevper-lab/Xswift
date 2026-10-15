@@ -15,7 +15,7 @@ async function googleFetch(url, accessToken, options = {}) {
   });
   if (!response.ok) {
     const detail = await response.text().catch(() => '');
-    let message = `Google Sheets ตอบกลับ (${response.status})`;
+    let message = `Google Sheets returned an error (${response.status})`;
     try { message = JSON.parse(detail).error?.message || message; } catch {}
     throw new Error(message);
   }
@@ -33,7 +33,7 @@ async function readRows(accessToken, spreadsheetId) {
 }
 
 export async function ensureCarSheet(accessToken, spreadsheetId) {
-  if (!spreadsheetId) throw new Error('ยังไม่ได้ตั้งค่า Spreadsheet ID');
+  if (!spreadsheetId) throw new Error('Spreadsheet ID is not configured.');
   let metadata = await googleFetch(`${apiUrl(spreadsheetId)}?fields=sheets.properties(sheetId,title)`, accessToken);
   let sheet = metadata.sheets?.find(item => item.properties?.title === TAB_NAME);
   if (!sheet) {
@@ -42,7 +42,7 @@ export async function ensureCarSheet(accessToken, spreadsheetId) {
     });
     metadata = await googleFetch(`${apiUrl(spreadsheetId)}?fields=sheets.properties(sheetId,title)`, accessToken);
     sheet = metadata.sheets?.find(item => item.properties?.title === TAB_NAME);
-    if (!sheet) throw new Error('สร้างแท็บรถยนต์ไม่สำเร็จ');
+    if (!sheet) throw new Error('Could not create the vehicle sheet tab.');
   }
 
   const rows = await readRows(accessToken, spreadsheetId);
@@ -53,7 +53,7 @@ export async function ensureCarSheet(accessToken, spreadsheetId) {
       method: 'PUT', body: JSON.stringify({ range: tabRange(`A1:B${initialRows.length}`), majorDimension: 'ROWS', values: initialRows })
     });
   } else if (rows[0]?.[0] !== 'key' || rows[0]?.[1] !== 'value') {
-    throw new Error(`แท็บ “${TAB_NAME}” มีรูปแบบไม่ตรงกับแอป จึงไม่ได้แก้ไขข้อมูลในแท็บ`);
+    throw new Error('The vehicle sheet tab has an unexpected format. It was not changed.');
   }
   return sheet.properties.sheetId;
 }
@@ -94,3 +94,4 @@ export async function saveCar(accessToken, spreadsheetId, carRecord) {
     body: JSON.stringify({ valueInputOption: 'RAW', data: updates })
   });
 }
+
