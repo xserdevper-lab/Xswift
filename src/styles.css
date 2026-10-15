@@ -125,7 +125,7 @@ h1, h2, h3, p { margin: 0; }
 .license-photo .photo-placeholder { gap: 3px; font-size: 8px; text-align: center; }
 .license-photo .photo-placeholder svg { width: 21px; height: 21px; }
 
-.fuel-section { display: grid; gap: 9px; margin-top: 14px; }
+.fuel-section { margin-top: 14px; }
 .fuel-card { padding: 13px 15px 14px; border-radius: 18px; background: #f0f0f0; }
 .fuel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .fuel-heading p { color: var(--ink); font-size: 11px; font-weight: 550; }
@@ -134,17 +134,14 @@ h1, h2, h3, p { margin: 0; }
 .fuel-progress { height: 4px; margin-top: 12px; overflow: hidden; border-radius: 999px; background: #d2d2d2; }
 .fuel-progress > span { display: block; width: 0; height: 100%; border-radius: inherit; background: #17181b; transition: width .2s ease; }
 .fuel-scale { display: flex; justify-content: space-between; margin-top: 5px; color: #66686d; font-size: 9px; font-variant-numeric: tabular-nums; }
-.fuel-form { display: flex; align-items: end; gap: 8px; margin-top: 11px; }
-.fuel-form > label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
-.fuel-entry-row { display: flex; flex: 1; min-width: 0; gap: 8px; }
+.fuel-actions-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
 .fuel-amount-field { display: flex; align-items: center; min-width: 0; height: 38px; padding: 0 10px; border: 1px solid #dddddf; border-radius: 10px; background: #fff; color: #73757a; }
 .fuel-amount-field > span { flex: none; font-size: 12px; }
 .fuel-amount-field input { width: 100%; min-width: 0; height: 100%; padding: 0 0 0 6px; border: 0; outline: 0; background: transparent; color: var(--ink); font-family: inherit; font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; }
 .fuel-amount-field input:focus-visible { outline: none; }
 .fuel-amount-field:focus-within { border-color: #77797e; }
-.fuel-entry-row > .fuel-amount-field { flex: 1; }
-.fuel-form .button { min-height: 38px; border-radius: 10px; }
-.fuel-summary-dark { display: flex; align-items: center; justify-content: space-between; width: min(45%, 150px); min-height: 48px; padding: 0 14px; border-radius: 12px; background: #353535; color: #fff; }
+.fuel-actions-row > .button { min-height: 38px; border-radius: 10px; }
+.fuel-summary-dark { display: flex; align-items: center; justify-content: space-between; flex: 1; min-width: 0; min-height: 38px; padding: 0 12px; border-radius: 10px; background: #353535; color: #fff; }
 .fuel-summary-dark span { font-size: 10px; }
 .fuel-summary-dark strong { font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; }
 
@@ -284,7 +281,7 @@ h1, h2, h3, p { margin: 0; }
   .license-photo { width: 58px; height: 58px; }
   .fuel-card { padding: 12px 13px; }
   .fuel-section { margin-top: 12px; }
-  .fuel-summary-dark { min-height: 46px; }
+  .fuel-summary-dark { min-height: 38px; }
   .data-card { gap: 8px; }
   .data-row { grid-template-columns: 28px minmax(0, 1fr); grid-template-rows: 29px auto; gap: 8px 6px; min-height: 116px; padding: 11px; border-radius: 16px; }
   .data-icon { width: 28px; height: 28px; }
