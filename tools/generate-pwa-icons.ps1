@@ -15,56 +15,57 @@ function New-PwaIcon([int]$size, [string]$filename, [bool]$maskable = $false) {
   $inset = $(if ($maskable) { $size * 0.1 } else { 0.0 })
   $graphics.Transform = [System.Drawing.Drawing2D.Matrix]::new([single]$scale, 0, 0, [single]$scale, [single]$inset, [single]$inset)
 
-  $black = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(17, 17, 17))
-  $white = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::White)
-  $bodyPen = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(17, 17, 17), 13)
-  $bodyPen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
-  $wheelPen = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(17, 17, 17), 14)
+  $ink = [System.Drawing.Color]::FromArgb(17, 17, 17)
+  $roadPen = [System.Drawing.Pen]::new($ink, 54)
+  $roadPen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+  $roadPen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+  $dashPen = [System.Drawing.Pen]::new([System.Drawing.Color]::White, 9)
+  $dashPen.DashPattern = [single[]]@(3, 3.45)
+  $dashPen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+  $dashPen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+  $carPen = [System.Drawing.Pen]::new($ink, 12)
+  $carPen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
+  $wheelPen = [System.Drawing.Pen]::new($ink, 10)
 
-  $speedLines = @(
-    [System.Drawing.PointF[]]@([System.Drawing.PointF]::new(62, 152), [System.Drawing.PointF]::new(192, 152), [System.Drawing.PointF]::new(174, 172), [System.Drawing.PointF]::new(62, 172)),
-    [System.Drawing.PointF[]]@([System.Drawing.PointF]::new(74, 190), [System.Drawing.PointF]::new(165, 190), [System.Drawing.PointF]::new(149, 209), [System.Drawing.PointF]::new(74, 209)),
-    [System.Drawing.PointF[]]@([System.Drawing.PointF]::new(86, 227), [System.Drawing.PointF]::new(135, 227), [System.Drawing.PointF]::new(123, 246), [System.Drawing.PointF]::new(86, 246))
-  )
-  foreach ($line in $speedLines) { $graphics.FillPolygon($black, $line) }
+  $graphics.DrawLine($roadPen, 108, 112, 404, 400)
+  $graphics.DrawLine($roadPen, 404, 112, 108, 400)
+  $graphics.DrawLine($dashPen, 108, 112, 404, 400)
+  $graphics.DrawLine($dashPen, 404, 112, 108, 400)
 
   $body = [System.Drawing.Drawing2D.GraphicsPath]::new()
   $body.StartFigure()
-  $body.AddLine(125, 294, 112, 281)
-  $body.AddBezier(112, 281, 97, 266, 95, 242, 102, 220)
-  $body.AddBezier(102, 220, 108, 205, 114, 199, 121, 193)
-  $body.AddLine(121, 193, 177, 135)
-  $body.AddBezier(177, 135, 198, 114, 224, 104, 254, 104)
-  $body.AddLine(254, 104, 325, 104)
-  $body.AddBezier(325, 104, 356, 104, 378, 116, 402, 137)
-  $body.AddLine(402, 137, 436, 169)
-  $body.AddBezier(436, 169, 447, 179, 459, 183, 471, 187)
-  $body.AddBezier(471, 187, 484, 191, 492, 203, 492, 218)
-  $body.AddLine(492, 218, 492, 239)
-  $body.AddBezier(492, 239, 492, 258, 482, 275, 466, 286)
-  $body.AddLine(466, 286, 443, 301)
-  $body.AddBezier(443, 301, 438, 277, 418, 259, 394, 259)
-  $body.AddBezier(394, 259, 367, 259, 348, 278, 343, 304)
-  $body.AddLine(343, 304, 228, 304)
-  $body.AddBezier(228, 304, 224, 278, 205, 259, 179, 259)
-  $body.AddBezier(179, 259, 154, 259, 134, 278, 129, 304)
-  $body.AddLine(129, 304, 125, 294)
+  $body.AddLine(174, 263, 197, 242)
+  $body.AddLine(197, 242, 224, 212)
+  $body.AddBezier(224, 212, 232, 203, 242, 199, 255, 199)
+  $body.AddLine(255, 199, 293, 199)
+  $body.AddBezier(293, 199, 307, 199, 317, 204, 327, 214)
+  $body.AddLine(327, 214, 351, 239)
+  $body.AddLine(351, 239, 374, 248)
+  $body.AddBezier(374, 248, 382, 251, 387, 258, 387, 267)
+  $body.AddLine(387, 267, 387, 286)
+  $body.AddLine(387, 286, 366, 286)
+  $body.AddBezier(366, 286, 366, 271, 354, 259, 340, 259)
+  $body.AddBezier(340, 259, 325, 259, 313, 271, 313, 286)
+  $body.AddLine(313, 286, 258, 286)
+  $body.AddBezier(258, 286, 258, 271, 247, 259, 232, 259)
+  $body.AddBezier(232, 259, 217, 259, 205, 271, 205, 286)
+  $body.AddLine(205, 286, 185, 286)
+  $body.AddLine(185, 286, 185, 269)
+  $body.AddBezier(185, 269, 185, 261, 190, 254, 198, 251)
   $body.CloseFigure()
-  $graphics.FillPath($white, $body)
-  $graphics.DrawPath($bodyPen, $body)
-
-  foreach ($centerX in @(179, 394)) {
-    $graphics.FillEllipse($white, $centerX - 39, 265, 78, 78)
-    $graphics.DrawEllipse($wheelPen, $centerX - 39, 265, 78, 78)
-  }
+  $graphics.FillPath([System.Drawing.Brushes]::White, $body)
+  $graphics.DrawPath($carPen, $body)
+  $graphics.FillEllipse([System.Drawing.Brushes]::White, 216, 270, 32, 32)
+  $graphics.DrawEllipse($wheelPen, 216, 270, 32, 32)
+  $graphics.FillEllipse([System.Drawing.Brushes]::White, 324, 270, 32, 32)
+  $graphics.DrawEllipse($wheelPen, 324, 270, 32, 32)
 
   $path = Join-Path $iconsDir $filename
   $bitmap.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
-  $body.Dispose(); $bodyPen.Dispose(); $wheelPen.Dispose(); $black.Dispose(); $white.Dispose(); $graphics.Dispose(); $bitmap.Dispose()
+  $body.Dispose(); $roadPen.Dispose(); $dashPen.Dispose(); $carPen.Dispose(); $wheelPen.Dispose(); $graphics.Dispose(); $bitmap.Dispose()
 }
 
 New-PwaIcon 180 'xswift-180.png'
 New-PwaIcon 192 'xswift-192.png'
 New-PwaIcon 512 'xswift-512.png'
 New-PwaIcon 512 'xswift-512-maskable.png' $true
-
