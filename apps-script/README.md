@@ -6,7 +6,7 @@ This backend lets the public GitHub Pages app read one vehicle record and its tw
 
 1. Open the Xswift spreadsheet (`1xxaLYpoQvzXhIzkHllMToVo-SKeM4TKNik7kqDbKID4`) while signed into the owner account.
 2. Choose **Extensions → Apps Script** so the project is bound to this spreadsheet. Replace `Code.gs` with this folder's `Code.gs`. In **Project Settings**, show the manifest file and replace `appsscript.json` with this folder's manifest.
-3. Select `setupXswift` in the editor and run it once. Review and grant the Sheets, Drive, and spreadsheet UI permissions. A private 10-digit PIN appears in a one-time spreadsheet dialog; save it securely. It is stored only as a salted, iterated hash in Script Properties. Running setup again resets the PIN and invalidates existing sessions.
+3. Select `setupXswift` in the editor and run it once. Review and grant the Sheets, Drive, and spreadsheet UI permissions. A private 6-digit PIN appears in a one-time spreadsheet dialog; save it securely. It is stored only as a salted, iterated hash in Script Properties. Running setup again resets the PIN and invalidates existing sessions.
 4. Choose **Deploy → New deployment → Web app**. Set **Execute as: Me** and **Who has access: Anyone**, then deploy. Copy the URL ending in `/exec`.
 5. Put that public URL into `config.js` as `appsScriptUrl`, then publish the Xswift GitHub Pages update. The PIN and signing secret must never be put in `config.js` or the repository.
 
