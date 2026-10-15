@@ -33,9 +33,9 @@
         <p id="connection-message">Enter your private PIN to access this vehicle.</p>
       </div>
       <form id="pin-form" class="pin-form">
-        <label for="pin-input">10-digit app PIN</label>
+        <label for="pin-input">6-digit app PIN</label>
         <div class="pin-form-row">
-          <input id="pin-input" type="password" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{10}" maxlength="10" placeholder="••••••••••" required>
+          <input id="pin-input" type="password" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="••••••" required>
           <button id="pin-submit-button" class="button button-dark" type="submit">Unlock</button>
         </div>
       </form>
