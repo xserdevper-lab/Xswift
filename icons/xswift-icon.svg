@@ -1,13 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
-  <rect width="192" height="192" fill="#fff"/>
-  <rect width="192" height="192" rx="51" fill="#171717"/>
-  <g fill="#fff">
-    <path d="M35 70h25l-3 5H35zm5 11h18l-3 5H40zm4 11h12l-3 5h-9z"/>
-  </g>
-  <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
-    <path d="m60 109 2-8 6-7 13-17c3-4 8-6 13-6h12c7 0 12 2 17 7l11 12 12 4c5 2 8 6 8 11v5c0 5-3 9-7 11l-4 2" stroke-width="4"/>
-    <circle cx="78" cy="109" r="9" fill="#171717" stroke-width="4"/>
-    <circle cx="134" cy="109" r="9" fill="#171717" stroke-width="4"/>
-    <path d="M87 109h38" stroke-width="4"/>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="108" fill="#101010"/><g fill="#f3232b"><path d="M126 122h110l71 96-71 59z"/><path d="M374 122h-96l-36 30 34 46z"/><path d="M108 345 333 160h66L174 345z"/><path d="m275 253 98 92h-93l-65-63z"/></g><text x="256" y="424" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-style="italic" font-weight="800" font-size="96" fill="#fff">swift</text></svg>
