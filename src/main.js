@@ -5,7 +5,7 @@ import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncStat
 import { parseLegacyCar } from './legacy-import.js';
 
 const config = window.XSWIFT_CONFIG || {};
-const state = { record: null, toastTimer: 0 };
+const state = { record: null, toastTimer: 0, installPrompt: null };
 const $ = id => document.getElementById(id);
 
 function toast(message) {
@@ -204,6 +204,40 @@ function activateTab(activeTab, focusTab = false) {
   window.scrollTo(0, 0);
 }
 
+function setupInstallApp() {
+  const installButton = $('install-app-button');
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  if (isInstalled) installButton.hidden = true;
+
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault();
+    state.installPrompt = event;
+    installButton.hidden = isInstalled;
+  });
+  installButton.addEventListener('click', async () => {
+    if (!state.installPrompt) return;
+    const promptEvent = state.installPrompt;
+    state.installPrompt = null;
+    installButton.hidden = true;
+    await promptEvent.prompt();
+    const { outcome } = await promptEvent.userChoice;
+    if (outcome === 'accepted') toast('Xswift was installed.');
+  });
+  window.addEventListener('appinstalled', () => {
+    installButton.hidden = true;
+    state.installPrompt = null;
+    toast('Xswift was installed.');
+  });
+
+  if ('serviceWorker' in navigator) {
+    const workerUrl = new URL('../service-worker.js', import.meta.url);
+    const appScope = new URL('../', import.meta.url).pathname;
+    navigator.serviceWorker.register(workerUrl, { scope: appScope }).catch(error => {
+      console.warn('Xswift could not register its offline app shell.', error);
+    });
+  }
+}
+
 function bindEvents() {
   const tabs = [...document.querySelectorAll('[role="tab"][data-tab-target]')];
   tabs.forEach((tab, index) => {
@@ -246,6 +280,7 @@ function bindEvents() {
 
 async function initialize() {
   setToday();
+  setupInstallApp();
   bindEvents();
   setCarFormEnabled(false);
   if (!requireConfig()) {
@@ -277,6 +312,7 @@ async function initialize() {
 }
 
 initialize();
+
 
 
 
