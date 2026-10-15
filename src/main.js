@@ -256,7 +256,7 @@ function sheetControls(busy = false) {
 }
 async function connectSheet() {
   const pin = $('sheet-pin').value.trim();
-  if (!/^\\d{6}$/.test(pin)) { sheetStatus('Enter the private 6-digit PIN to connect.'); return; }
+  if (!/^\d{6}$/.test(pin)) { sheetStatus('Enter the private 6-digit PIN to connect.'); return; }
   sheetControls(true); sheetStatus('Connecting to Google Sheets…');
   try {
     await loginWithPin(pin);
