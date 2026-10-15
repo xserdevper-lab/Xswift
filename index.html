@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff">
   <meta name="description" content="ข้อมูลรถยนต์ ภาษี ประกัน และใบขับขี่ในหน้าเดียว">
   <title>รถของฉัน</title>
-  <link rel="stylesheet" href="./src/styles.css?v=4">
+  <link rel="stylesheet" href="./src/styles.css?v=5">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="./config.js?v=2"></script>
   <script type="module" src="./src/main.js"></script>
@@ -37,6 +37,7 @@
     </section>
 
     <section id="car-content" class="car-content" hidden aria-label="ข้อมูลรถยนต์">
+      <section id="panel-car" class="tab-panel" data-tab-panel="car" role="tabpanel" aria-labelledby="tab-car" tabindex="0">
       <div class="car-heading" id="car-top">
         <div>
           <p class="eyebrow">ข้อมูลรถ</p>
@@ -66,8 +67,10 @@
         </button>
         <input id="license-img-input" type="file" accept="image/*" hidden>
       </div>
+      </section>
 
-      <section id="car-details" class="data-section" aria-labelledby="document-title">
+      <section id="panel-details" class="tab-panel" data-tab-panel="details" role="tabpanel" aria-labelledby="tab-details" tabindex="0" hidden>
+      <section class="data-section" aria-labelledby="document-title">
         <div class="section-heading">
           <h3 id="document-title">ข้อมูลและเอกสาร</h3>
           <button id="edit-car-button" class="button button-outline" type="button">แก้ไขข้อมูล</button>
@@ -94,7 +97,9 @@
           </div>
         </div>
       </section>
+      </section>
 
+      <section id="panel-memo" class="tab-panel" data-tab-panel="memo" role="tabpanel" aria-labelledby="tab-memo" tabindex="0" hidden>
       <section id="memo-section" class="data-section memo-section" aria-labelledby="memo-title">
         <div class="section-heading">
           <h3 id="memo-title">บันทึกเกี่ยวกับรถ</h3>
@@ -106,21 +111,22 @@
         <button id="import-legacy-button" class="button button-quiet" type="button">นำเข้าข้อมูลรถเดิม</button>
         <input id="legacy-file-input" type="file" accept="application/json,.json" hidden>
       </section>
-      <nav class="bottom-nav" aria-label="ไปยังส่วนต่าง ๆ">
-        <a class="nav-link is-active" href="#car-top" aria-current="page">
+      <div class="footnote">ข้อมูลในหน้านี้จัดเก็บใน Google Sheets ของคุณ</div>
+      </section>
+      <nav class="bottom-nav" role="tablist" aria-label="เมนูหลัก">
+        <button id="tab-car" class="nav-link is-active" type="button" role="tab" aria-selected="true" aria-controls="panel-car" data-tab-target="car">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 14h18l-1.6-5a2 2 0 0 0-1.9-1.4H6.5A2 2 0 0 0 4.6 9L3 14Z"/><path d="M5 14v4m14-4v4M7 18h10"/><circle cx="7" cy="16" r="1"/><circle cx="17" cy="16" r="1"/></svg>
           <span>รถของฉัน</span>
-        </a>
-        <a class="nav-link" href="#car-details">
+        </button>
+        <button id="tab-details" class="nav-link" type="button" role="tab" aria-selected="false" aria-controls="panel-details" data-tab-target="details" tabindex="-1">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v4h6V3M8 12h8m-8 4h8"/></svg>
           <span>ข้อมูล</span>
-        </a>
-        <a class="nav-link" href="#memo-section">
+        </button>
+        <button id="tab-memo" class="nav-link" type="button" role="tab" aria-selected="false" aria-controls="panel-memo" data-tab-target="memo" tabindex="-1">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M8 9h8m-8 4h8m-8 4h5"/></svg>
           <span>บันทึก</span>
-        </a>
+        </button>
       </nav>
-      <div class="footnote">ข้อมูลในหน้านี้จัดเก็บใน Google Sheets ของคุณ</div>
     </section>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -147,6 +153,7 @@
   </dialog>
 </body>
 </html>
+
 
 
 
