@@ -129,6 +129,7 @@ async function addFuelExpense(event) {
     await saveRecord(next, 'Fuel fill saved.');
     renderCar(next);
     $('fuel-amount-input').value = '';
+    $('fuel-dialog').close();
   } catch {}
 }
 
@@ -294,9 +295,11 @@ function bindEvents() {
   });
   $('car-form').addEventListener('submit', saveCarDetails);
   $('save-memo-button').addEventListener('click', saveMemo);
+  $('fuel-add-button').addEventListener('click', () => $('fuel-dialog').showModal());
   $('fuel-form').addEventListener('submit', addFuelExpense);
   $('fuel-settings-form').addEventListener('submit', saveFuelLimit);
   document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => $('car-modal').close()));
+  document.querySelectorAll('[data-close-fuel-dialog]').forEach(button => button.addEventListener('click', () => $('fuel-dialog').close()));
   $('car-img-input').addEventListener('change', event => {
     replacePhoto(event.target.files[0], 'carImageFileId', 'car-img-preview', 'car-img-placeholder');
     event.target.value = '';
