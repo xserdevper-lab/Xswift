@@ -99,8 +99,8 @@ export function renderCar(record = {}) {
     const nextMaintenanceDate = addMonths(maintenanceDate, maintenanceIntervalMonths);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const remainingMonths = monthDifference;
     const monthDifference = (nextMaintenanceDate.getFullYear() - today.getFullYear()) * 12 + nextMaintenanceDate.getMonth() - today.getMonth();
+    const remainingMonths = monthDifference;
     const daysRemaining = monthDifference < 0 ? -1 : 1;
     const elapsed = Math.max(0, Math.min(100, ((today - maintenanceDate) / (nextMaintenanceDate - maintenanceDate)) * 100));
     let maintenanceStatus;
