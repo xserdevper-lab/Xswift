@@ -43,8 +43,7 @@ h1, h2, h3, p { margin: 0; }
   background: #ffffffed;
   backdrop-filter: blur(14px);
 }
-.app-header h1 { font-size: 19px; font-weight: 700; line-height: 1.05; letter-spacing: -.7px; }
-.app-header p { margin-top: 5px; color: var(--muted); font-size: 10px; }
+.header-date { color: var(--muted); font-size: 11px; }
 .header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
 .sync-status { color: var(--muted); font-size: 10px; white-space: nowrap; }
 .sync-status[data-state="connected"] { color: var(--green); }
@@ -177,6 +176,7 @@ h1, h2, h3, p { margin: 0; }
   transition: opacity .15s ease;
 }
 .photo-card:hover .photo-action, .photo-card:focus-visible .photo-action { opacity: 1; }
+@media (hover: none) { .photo-action { opacity: 1; } }
 
 .data-section { margin-top: 25px; scroll-margin-top: 84px; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 11px; }
@@ -225,6 +225,17 @@ h1, h2, h3, p { margin: 0; }
 .legacy-import-section { margin-top: 14px; padding-top: 8px; border-top: 1px solid var(--line); text-align: center; }
 .legacy-import-section .button { font-size: 10px; }
 
+.settings-panel { padding-top: 14px; }
+.settings-panel h2 { font-size: 23px; font-weight: 650; letter-spacing: -.6px; }
+.settings-description { margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.settings-card, .settings-account { margin-top: 20px; padding: 0 15px; border: 1px solid var(--line); border-radius: 18px; background: #fff; box-shadow: 0 5px 18px #11121608; }
+.settings-photo-row, .settings-account { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 72px; }
+.settings-photo-row + .settings-photo-row { border-top: 1px solid var(--line); }
+.settings-photo-row strong, .settings-account strong { display: block; font-size: 12px; font-weight: 600; }
+.settings-photo-row small, .settings-account small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
+.settings-account { margin-top: 12px; }
+.settings-sign-out { width: 100%; min-height: 46px; margin-top: 14px; border: 1px solid #f0dada; color: var(--danger); font-size: 12px; }
+
 .bottom-nav {
   position: fixed;
   right: 0;
@@ -232,7 +243,7 @@ h1, h2, h3, p { margin: 0; }
   left: 0;
   z-index: 5;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   width: min(calc(100% - 28px), 400px);
   min-height: 64px;
   margin: 0 auto;
@@ -308,5 +319,6 @@ h1, h2, h3, p { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
 
 
