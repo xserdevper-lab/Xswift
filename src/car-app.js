@@ -1,7 +1,8 @@
 const FORM_FIELDS = {
   model: 'ce-model', plate: 'ce-plate', price: 'ce-price', taxRenew: 'ce-tax-renew',
   taxExpire: 'ce-tax-expire', insType: 'ce-ins-type', insYear: 'ce-ins-year',
-  insExpire: 'ce-ins-expire', licenseExpire: 'ce-license-expire', batteryDate: 'ce-battery-date'
+  insExpire: 'ce-ins-expire', licenseExpire: 'ce-license-expire', batteryDate: 'ce-battery-date',
+  oilChangeDate: 'ce-oil-change-date', oilChangeIntervalMonths: 'ce-oil-change-interval'
 };
 
 const INSURANCE_TYPES = new Map([
@@ -14,6 +15,28 @@ function formatDate(value) {
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return '—';
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
+}
+
+function dateValue(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function addMonths(date, months) {
+  const result = new Date(date);
+  const day = result.getDate();
+  result.setDate(1);
+  result.setMonth(result.getMonth() + months);
+  const lastDay = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
+  result.setDate(Math.min(day, lastDay));
+  return result;
+}
+
+function wholeMonthsBetween(start, end) {
+  const calendarMonths = (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth();
+  return calendarMonths - (end.getDate() < start.getDate() ? 1 : 0);
 }
 
 function documentStatus(value) {
@@ -60,6 +83,39 @@ export function renderCar(record = {}) {
   document.getElementById('fuel-progress-fill').style.width = `${fuelProgressPercent}%`;
   document.getElementById('fuel-progress').setAttribute('aria-valuenow', String(fuelProgressPercent));
   document.getElementById('fuel-limit-input').value = String(fuelLimit);
+  const oilChangeDate = record.oilChangeDate ? new Date(`${record.oilChangeDate}T00:00:00`) : null;
+  const oilChangeIntervalMonths = Math.floor(Number(record.oilChangeIntervalMonths));
+  const hasOilChangeSchedule = oilChangeDate && !Number.isNaN(oilChangeDate.getTime()) && oilChangeIntervalMonths > 0;
+  put('oil-change-last-date', `Last change: ${hasOilChangeSchedule ? formatDate(record.oilChangeDate) : '—'}`);
+  put('oil-change-interval', `Every ${hasOilChangeSchedule ? oilChangeIntervalMonths : '—'} months`);
+  if (hasOilChangeSchedule) {
+    const nextOilChangeDate = addMonths(oilChangeDate, oilChangeIntervalMonths);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const remainingMonths = wholeMonthsBetween(today, nextOilChangeDate);
+    const daysRemaining = Math.ceil((nextOilChangeDate - today) / 86400000);
+    const elapsed = Math.max(0, Math.min(100, ((today - oilChangeDate) / (nextOilChangeDate - oilChangeDate)) * 100));
+    let oilStatus;
+    if (daysRemaining < 0) {
+      const overdueMonths = Math.max(0, wholeMonthsBetween(nextOilChangeDate, today));
+      oilStatus = overdueMonths ? `Overdue by ${overdueMonths} ${overdueMonths === 1 ? 'month' : 'months'}` : 'Overdue this month';
+    } else if (remainingMonths > 0) {
+      oilStatus = `${remainingMonths} ${remainingMonths === 1 ? 'month' : 'months'} left`;
+    } else if (nextOilChangeDate.getFullYear() === today.getFullYear() && nextOilChangeDate.getMonth() === today.getMonth()) {
+      oilStatus = 'Due this month';
+    } else {
+      oilStatus = 'Due in less than 1 month';
+    }
+    put('oil-change-status', oilStatus);
+    put('oil-change-next-date', `Next change: ${formatDate(dateValue(nextOilChangeDate))}`);
+    document.getElementById('oil-change-progress-fill').style.width = `${elapsed}%`;
+    document.getElementById('oil-change-progress').setAttribute('aria-valuenow', String(Math.round(elapsed)));
+  } else {
+    put('oil-change-status', 'Not set');
+    put('oil-change-next-date', 'Set in Edit details');
+    document.getElementById('oil-change-progress-fill').style.width = '0%';
+    document.getElementById('oil-change-progress').setAttribute('aria-valuenow', '0');
+  }
   put('car-tax-renew', `Renewal: ${formatDate(record.taxRenew)}`);
   put('car-tax-expire', formatDate(record.taxExpire));
   const insuranceType = INSURANCE_TYPES.get(record.insType) || record.insType;

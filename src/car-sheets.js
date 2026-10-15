@@ -1,7 +1,8 @@
 const TAB_NAME = 'รถยนต์';
 export const CAR_FIELDS = [
   'model', 'plate', 'price', 'taxRenew', 'taxExpire', 'insType', 'insYear',
-  'insExpire', 'licenseExpire', 'batteryDate', 'memo', 'carImageFileId', 'licenseImageFileId', 'fuelLimit', 'fuelSpent'
+  'insExpire', 'licenseExpire', 'batteryDate', 'oilChangeDate', 'oilChangeIntervalMonths',
+  'memo', 'carImageFileId', 'licenseImageFileId', 'fuelLimit', 'fuelSpent'
 ];
 
 function apiUrl(spreadsheetId, path = '') {
