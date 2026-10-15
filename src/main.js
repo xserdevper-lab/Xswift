@@ -189,6 +189,14 @@ function setToday() {
 }
 
 function bindEvents() {
+  document.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', () => {
+    document.querySelectorAll('.nav-link').forEach(item => {
+      item.classList.remove('is-active');
+      item.removeAttribute('aria-current');
+    });
+    link.classList.add('is-active');
+    link.setAttribute('aria-current', 'location');
+  }));
   $('sign-in-button').addEventListener('click', connectGoogle);
   $('connect-button').addEventListener('click', connectGoogle);
   $('sign-out-button').addEventListener('click', signOutGoogle);
@@ -229,3 +237,4 @@ async function initialize() {
 }
 
 initialize();
+
