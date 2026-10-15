@@ -45,9 +45,21 @@ function putStatus(id, date) {
 export function renderCar(record = {}) {
   put('car-model-text', record.model || 'Vehicle not set up');
   put('car-plate-text', record.plate || 'License plate');
-  put('car-plate-badge', record.plate || '—');
   const price = Number(record.price || 0);
   put('car-price-val', `฿${price.toLocaleString('en-US')}`);
+  const fuelLimit = Math.max(1, Number(record.fuelLimit) || 5000);
+  const fuelSpent = Math.max(0, Number(record.fuelSpent) || 0);
+  const fuelUsedPercent = Math.round((fuelSpent / fuelLimit) * 100);
+  const fuelProgressPercent = Math.min(100, fuelUsedPercent);
+  const formatBaht = value => `฿${Math.round(value).toLocaleString('en-US')}`;
+  put('fuel-limit-display', fuelLimit.toLocaleString('en-US'));
+  put('fuel-limit-scale', formatBaht(fuelLimit));
+  put('fuel-progress-center', formatBaht(fuelSpent));
+  put('fuel-spent-display', `${formatBaht(fuelSpent)} spent`);
+  put('fuel-used-percent', `${fuelUsedPercent}%`);
+  document.getElementById('fuel-progress-fill').style.width = `${fuelProgressPercent}%`;
+  document.getElementById('fuel-progress').setAttribute('aria-valuenow', String(fuelProgressPercent));
+  document.getElementById('fuel-limit-input').value = String(fuelLimit);
   put('car-tax-renew', `Renewal: ${formatDate(record.taxRenew)}`);
   put('car-tax-expire', formatDate(record.taxExpire));
   const insuranceType = INSURANCE_TYPES.get(record.insType) || record.insType;
@@ -107,6 +119,9 @@ export function setSyncState(state, message) {
 export function setCarFormEnabled(enabled) {
   document.getElementById('car-memo').disabled = !enabled;
   for (const id of ['edit-car-button', 'save-memo-button']) {
+    document.getElementById(id).disabled = !enabled;
+  }
+  for (const id of ['fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button']) {
     document.getElementById(id).disabled = !enabled;
   }
 }

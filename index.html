@@ -9,7 +9,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="./icons/xswift-icon.svg">
   <link rel="apple-touch-icon" href="./icons/xswift-180.png">
-  <link rel="stylesheet" href="./src/styles.css?v=7">
+  <link rel="stylesheet" href="./src/styles.css?v=8">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="./config.js?v=3"></script>
   <script type="module" src="./src/main.js"></script>
@@ -38,33 +38,51 @@
 
     <section id="car-content" class="car-content" hidden aria-label="Vehicle information">
       <section id="panel-car" class="tab-panel" data-tab-panel="car" role="tabpanel" aria-labelledby="tab-car" tabindex="0">
-      <div class="car-heading" id="car-top">
-        <div>
-          <p class="eyebrow">VEHICLE</p>
-          <h2 id="car-model-text">Vehicle not set up</h2>
-          <p id="car-plate-text" class="muted">License plate</p>
-        </div>
-        <div class="plate-badge" id="car-plate-badge">—</div>
-      </div>
-
       <div class="photo-grid">
         <div class="photo-card car-photo" role="img" aria-label="Vehicle photo">
           <img id="car-img-preview" alt="Vehicle" hidden>
           <span id="car-img-placeholder" class="photo-placeholder">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 14h18l-1.6-5a2 2 0 0 0-1.9-1.4H6.5A2 2 0 0 0 4.6 9L3 14Z"/><path d="M5 14v4m14-4v4M7 18h10"/><circle cx="7" cy="16" r="1"/><circle cx="17" cy="16" r="1"/></svg>
-            <span>Add vehicle photo</span>
+            <span>Vehicle photo not set</span>
           </span>
         </div>
         <input id="car-img-input" type="file" accept="image/*" hidden>
+      </div>
+
+      <div class="car-heading" id="car-top">
+        <div class="car-title-block">
+          <p class="eyebrow">VEHICLE</p>
+          <h2 id="car-model-text">Vehicle not set up</h2>
+          <p id="car-plate-text" class="muted">License plate</p>
+        </div>
         <div class="photo-card license-photo" role="img" aria-label="Driver's license photo">
           <img id="car-license-img" alt="Driver's license" hidden>
           <span id="license-img-placeholder" class="photo-placeholder">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2.5"/><path d="M5 17c.7-2 2-3 4-3s3.3 1 4 3m2-7h3m-3 4h3"/></svg>
-            <span>Add license photo</span>
+            <span>No license photo</span>
           </span>
         </div>
-        <input id="license-img-input" type="file" accept="image/*" hidden>
       </div>
+      <input id="license-img-input" type="file" accept="image/*" hidden>
+
+      <section class="fuel-section" aria-labelledby="fuel-title">
+        <div class="fuel-card">
+          <div class="fuel-heading">
+            <div><p id="fuel-title">Fuel budget</p><strong>฿<span id="fuel-limit-display">5,000</span></strong></div>
+            <span id="fuel-spent-display" class="fuel-spent">฿0 spent</span>
+          </div>
+          <div id="fuel-progress" class="fuel-progress" role="progressbar" aria-label="Fuel budget used" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="fuel-progress-fill"></span></div>
+          <div class="fuel-scale" aria-hidden="true"><span>฿0</span><span id="fuel-progress-center">฿0</span><span id="fuel-limit-scale">฿5,000</span></div>
+          <form id="fuel-form" class="fuel-form">
+            <label for="fuel-amount-input">Fuel filled</label>
+            <div class="fuel-entry-row">
+              <div class="fuel-amount-field"><span aria-hidden="true">฿</span><input id="fuel-amount-input" type="number" min="1" step="1" inputmode="numeric" placeholder="Amount" required disabled></div>
+              <button id="fuel-add-button" class="button button-dark" type="submit" disabled>Add fill</button>
+            </div>
+          </form>
+        </div>
+        <div class="fuel-summary-dark"><span>Budget used</span><strong id="fuel-used-percent">0%</strong></div>
+      </section>
       </section>
 
       <section id="panel-details" class="tab-panel" data-tab-panel="details" role="tabpanel" aria-labelledby="tab-details" tabindex="0" hidden>
@@ -118,6 +136,10 @@
           <div class="settings-photo-row"><div><strong>Vehicle photo</strong><small>Stored in your Google Drive</small></div><button id="settings-car-photo" class="button button-outline" type="button">Change</button></div>
           <div class="settings-photo-row"><div><strong>Driver's license photo</strong><small>Stored in your Google Drive</small></div><button id="settings-license-photo" class="button button-outline" type="button">Change</button></div>
         </div>
+        <form id="fuel-settings-form" class="settings-account fuel-settings-form">
+          <label for="fuel-limit-input"><strong>Fuel budget limit</strong><small>Set your total fuel budget in THB.</small></label>
+          <div class="fuel-limit-control"><div class="fuel-amount-field"><span aria-hidden="true">฿</span><input id="fuel-limit-input" type="number" min="1" step="1" inputmode="numeric" value="5000" disabled></div><button id="save-fuel-limit-button" class="button button-outline" type="submit" disabled>Save</button></div>
+        </form>
         <div class="settings-account"><div><strong>Google account</strong><small id="settings-account-status">Not connected</small></div><button id="settings-connect-button" class="button button-outline" type="button">Connect</button></div>
         <button id="sign-out-button" class="button button-quiet settings-sign-out" type="button" hidden>Sign out</button>
       </section>
