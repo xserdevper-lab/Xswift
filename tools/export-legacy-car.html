@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="th">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ส่งออกข้อมูลรถเดิม</title>
+<body style="max-width:540px;margin:40px auto;padding:0 18px;font:16px system-ui,sans-serif;color:#171717">
+  <h1>ส่งออกข้อมูลรถเดิม</h1>
+  <p>เปิดหน้านี้ผ่าน XAMPP ใน origin เดียวกับแอปเก่า เพื่อดาวน์โหลดเฉพาะข้อมูลรถจาก localStorage</p>
+  <button id="export" style="padding:11px 16px;border:0;border-radius:8px;background:#171717;color:#fff;font:inherit">ดาวน์โหลดไฟล์ข้อมูลรถ</button>
+  <p id="status" role="status"></p>
+  <script>
+    document.getElementById('export').addEventListener('click', () => {
+      const status = document.getElementById('status');
+      try {
+        const raw = localStorage.getItem('myspace-data');
+        const data = raw ? JSON.parse(raw) : null;
+        if (!data?.car || typeof data.car !== 'object') throw new Error('ไม่พบข้อมูลรถเดิมใน localStorage ของ origin นี้');
+        const blob = new Blob([JSON.stringify({ car: data.car }, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'xswift-car-export.json';
+        link.click();
+        window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+        status.textContent = 'ดาวน์โหลดแล้ว ไปที่แอปใหม่และเลือก “นำเข้าข้อมูลรถเดิม”';
+      } catch (error) { status.textContent = error.message; }
+    });
+  </script>
+</body>
+</html>

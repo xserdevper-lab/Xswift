@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="ข้อมูลรถยนต์ ภาษี ประกัน และใบขับขี่ในหน้าเดียว">
+  <title>รถของฉัน</title>
+  <link rel="stylesheet" href="./src/styles.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="./config.js"></script>
+  <script type="module" src="./src/main.js"></script>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <div>
+        <h1>รถของฉัน</h1>
+        <p id="today-date"></p>
+      </div>
+      <div class="header-actions">
+        <span id="sync-status" class="sync-status" role="status" aria-live="polite">ยังไม่ได้เชื่อมต่อ</span>
+        <button id="sign-in-button" class="button button-dark" type="button">เชื่อมต่อ Google</button>
+        <button id="sign-out-button" class="button button-quiet" type="button" hidden>ออกจากระบบ</button>
+      </div>
+    </header>
+
+    <section id="connection-panel" class="connection-panel" aria-labelledby="connection-title">
+      <div class="connection-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M3 14h18l-1.6-5a2 2 0 0 0-1.9-1.4H6.5A2 2 0 0 0 4.6 9L3 14Z"/><path d="M5 14v4m14-4v4M7 18h10M6 11h12"/><circle cx="7" cy="16" r="1"/><circle cx="17" cy="16" r="1"/></svg>
+      </div>
+      <div>
+        <h2 id="connection-title">เชื่อมต่อบัญชี Google</h2>
+        <p id="connection-message">ลงชื่อเข้าใช้เพื่อดูและบันทึกข้อมูลรถจาก Google Sheets</p>
+      </div>
+      <button id="connect-button" class="button button-red" type="button">เชื่อมต่อ</button>
+    </section>
+
+    <section id="car-content" class="car-content" hidden aria-label="ข้อมูลรถยนต์">
+      <div class="car-heading">
+        <div>
+          <p class="eyebrow">ข้อมูลรถ</p>
+          <h2 id="car-model-text">ยังไม่ได้ตั้งค่ารถ</h2>
+          <p id="car-plate-text" class="muted">ทะเบียนรถ</p>
+        </div>
+        <div class="plate-badge" id="car-plate-badge">—</div>
+      </div>
+
+      <div class="photo-grid">
+        <button id="car-photo-button" class="photo-card car-photo" type="button" aria-label="เลือกรูปรถ">
+          <img id="car-img-preview" alt="รูปรถ" hidden>
+          <span id="car-img-placeholder" class="photo-placeholder">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 14h18l-1.6-5a2 2 0 0 0-1.9-1.4H6.5A2 2 0 0 0 4.6 9L3 14Z"/><path d="M5 14v4m14-4v4M7 18h10"/><circle cx="7" cy="16" r="1"/><circle cx="17" cy="16" r="1"/></svg>
+            <span>เพิ่มรูปรถ</span>
+          </span>
+          <span class="photo-action">เปลี่ยนรูป</span>
+        </button>
+        <input id="car-img-input" type="file" accept="image/*" hidden>
+        <button id="license-photo-button" class="photo-card license-photo" type="button" aria-label="เลือกรูปใบขับขี่">
+          <img id="car-license-img" alt="รูปใบขับขี่" hidden>
+          <span id="license-img-placeholder" class="photo-placeholder">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2.5"/><path d="M5 17c.7-2 2-3 4-3s3.3 1 4 3m2-7h3m-3 4h3"/></svg>
+            <span>เพิ่มรูปใบขับขี่</span>
+          </span>
+          <span class="photo-action">เปลี่ยนรูป</span>
+        </button>
+        <input id="license-img-input" type="file" accept="image/*" hidden>
+      </div>
+
+      <section class="data-section" aria-labelledby="document-title">
+        <div class="section-heading">
+          <h3 id="document-title">ข้อมูลและเอกสาร</h3>
+          <button id="edit-car-button" class="button button-outline" type="button">แก้ไขข้อมูล</button>
+        </div>
+        <div class="data-card">
+          <div class="data-row">
+            <span class="data-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v12m4-9H9.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H8"/></svg></span>
+            <span class="data-label">ราคารถ</span><strong id="car-price-val" class="data-value">฿0</strong>
+          </div>
+          <div class="data-row">
+            <span class="data-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v4h6V3M8 12h8m-8 4h8"/></svg></span>
+            <span class="data-label">ภาษีรถยนต์<small id="car-tax-renew">วันต่อ: —</small></span>
+            <span class="data-value-stack"><strong id="car-tax-expire">—</strong><small id="car-tax-status"></small></span>
+          </div>
+          <div class="data-row">
+            <span class="data-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+            <span class="data-label">ประกันรถยนต์<small id="car-ins-type">—</small></span>
+            <span class="data-value-stack"><strong id="car-ins-expire">—</strong><small id="car-ins-status"></small></span>
+          </div>
+          <div class="data-row">
+            <span class="data-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2"/><path d="M14 10h4m-4 4h4"/></svg></span>
+            <span class="data-label">ใบขับขี่<small>วันหมดอายุ</small></span>
+            <span class="data-value-stack"><strong id="car-license-expire">—</strong><small id="car-license-status"></small></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="data-section memo-section" aria-labelledby="memo-title">
+        <div class="section-heading">
+          <h3 id="memo-title">บันทึกเกี่ยวกับรถ</h3>
+          <button id="save-memo-button" class="button button-quiet" type="button">บันทึก</button>
+        </div>
+        <textarea id="car-memo" rows="3" placeholder="รายละเอียดการดูแลรถหรือหมายเหตุ" disabled></textarea>
+      </section>
+      <section id="legacy-import-section" class="legacy-import-section" aria-label="นำเข้าข้อมูลรถเดิม">
+        <button id="import-legacy-button" class="button button-quiet" type="button">นำเข้าข้อมูลรถเดิม</button>
+        <input id="legacy-file-input" type="file" accept="application/json,.json" hidden>
+      </section>
+      <div class="footnote">ข้อมูลในหน้านี้จัดเก็บใน Google Sheets ของคุณ</div>
+    </section>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <dialog id="car-modal" class="edit-dialog">
+    <form id="car-form" method="dialog">
+      <div class="dialog-head"><div><p class="eyebrow">ข้อมูลรถ</p><h2>แก้ไขข้อมูลรถ</h2></div><button class="close-button" type="button" aria-label="ปิด" data-close-dialog>×</button></div>
+      <label class="form-field">รุ่นรถ<input id="ce-model" name="model" autocomplete="off" placeholder="เช่น Toyota Yaris"></label>
+      <label class="form-field">ทะเบียน<input id="ce-plate" name="plate" autocomplete="off" placeholder="กข 1234"></label>
+      <label class="form-field">ราคาเต็มรถ (บาท)<input id="ce-price" name="price" type="number" min="0" inputmode="numeric"></label>
+      <div class="form-row">
+        <label class="form-field">วันที่ต่อภาษี<input id="ce-tax-renew" name="taxRenew" type="date"></label>
+        <label class="form-field">วันสิ้นสุดภาษี<input id="ce-tax-expire" name="taxExpire" type="date"></label>
+      </div>
+      <div class="form-row">
+        <label class="form-field">ประเภทประกัน<select id="ce-ins-type" name="insType"><option value="">เลือกประเภท</option><option>ชั้น 1</option><option>ชั้น 2</option><option>ชั้น 2+</option><option>ชั้น 3</option><option>ชั้น 3+</option></select></label>
+        <label class="form-field">ปีประกัน<input id="ce-ins-year" name="insYear" type="number" inputmode="numeric" placeholder="2569"></label>
+      </div>
+      <label class="form-field">วันสิ้นสุดประกัน<input id="ce-ins-expire" name="insExpire" type="date"></label>
+      <label class="form-field">วันหมดอายุใบขับขี่<input id="ce-license-expire" name="licenseExpire" type="date"></label>
+      <div class="dialog-actions"><button class="button button-outline" type="button" data-close-dialog>ยกเลิก</button><button id="save-car-button" class="button button-red" type="submit">บันทึกข้อมูล</button></div>
+    </form>
+  </dialog>
+</body>
+</html>
