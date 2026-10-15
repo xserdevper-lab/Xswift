@@ -17,6 +17,10 @@ function formatDate(value) {
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
 }
 
+function formatMaintenanceMonth(date) {
+  return new Intl.DateTimeFormat('th-TH', {month:'long',year:'numeric'}).format(date);
+}
+
 function dateValue(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -86,21 +90,22 @@ export function renderCar(record = {}) {
   document.getElementById('fuel-limit-input').value = String(fuelLimit);
   const maintenanceProgressFill = document.getElementById('maintenance-progress-fill');
   const maintenanceProgress = document.getElementById('maintenance-progress');
-  const maintenanceDate = record.maintenanceDate ? new Date(`${record.maintenanceDate}T00:00:00`) : null;
-  const maintenanceIntervalMonths = Math.floor(Number(record.maintenanceIntervalMonths));
+  const maintenanceDate = record.maintenanceDate ? new Date(`${record.maintenanceDate.slice(0,7)}-01T00:00:00`) : null;
+  const maintenanceIntervalMonths = Math.floor(Number(record.maintenanceIntervalMonths || 6));
   const hasMaintenanceSchedule = maintenanceDate && !Number.isNaN(maintenanceDate.getTime()) && maintenanceIntervalMonths > 0;
-  put('maintenance-last-date', `Last service: ${hasMaintenanceSchedule ? formatDate(record.maintenanceDate) : '—'}`);
+  put('maintenance-last-date', `Last service: ${hasMaintenanceSchedule ? formatMaintenanceMonth(maintenanceDate) : '—'}`);
   put('maintenance-interval', `Every ${hasMaintenanceSchedule ? maintenanceIntervalMonths : '—'} months`);
   if (hasMaintenanceSchedule) {
     const nextMaintenanceDate = addMonths(maintenanceDate, maintenanceIntervalMonths);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const remainingMonths = wholeMonthsBetween(today, nextMaintenanceDate);
-    const daysRemaining = Math.ceil((nextMaintenanceDate - today) / 86400000);
+    const remainingMonths = monthDifference;
+    const monthDifference = (nextMaintenanceDate.getFullYear() - today.getFullYear()) * 12 + nextMaintenanceDate.getMonth() - today.getMonth();
+    const daysRemaining = monthDifference < 0 ? -1 : 1;
     const elapsed = Math.max(0, Math.min(100, ((today - maintenanceDate) / (nextMaintenanceDate - maintenanceDate)) * 100));
     let maintenanceStatus;
     if (daysRemaining < 0) {
-      const overdueMonths = Math.max(0, wholeMonthsBetween(nextMaintenanceDate, today));
+      const overdueMonths = Math.abs(monthDifference);
       maintenanceStatus = overdueMonths ? `Overdue by ${overdueMonths} ${overdueMonths === 1 ? 'month' : 'months'}` : 'Overdue this month';
     } else if (remainingMonths > 0) {
       maintenanceStatus = `${remainingMonths} ${remainingMonths === 1 ? 'month' : 'months'} left`;
@@ -110,7 +115,7 @@ export function renderCar(record = {}) {
       maintenanceStatus = 'Due in less than 1 month';
     }
     put('maintenance-status', maintenanceStatus);
-    put('maintenance-next-date', `Next service: ${formatDate(dateValue(nextMaintenanceDate))}`);
+    put('maintenance-next-date', `Next service: ${formatMaintenanceMonth(nextMaintenanceDate)}`);
     if (maintenanceProgressFill) maintenanceProgressFill.style.width = `${elapsed}%`;
     if (maintenanceProgress) maintenanceProgress.setAttribute('aria-valuenow', String(Math.round(elapsed)));
   } else {
@@ -135,6 +140,8 @@ export function renderCar(record = {}) {
     if (!input) continue;
     input.value = field === 'insType'
       ? (INSURANCE_TYPES.get(record[field]) || record[field] || '')
+      : field === 'maintenanceDate' ? String(record[field] || '').slice(0,7)
+      : field === 'maintenanceIntervalMonths' ? String(record[field] || 6)
       : record[field] ?? '';
   }
 }
@@ -142,7 +149,7 @@ export function renderCar(record = {}) {
 export function readCarForm() {
   return Object.fromEntries(Object.entries(FORM_FIELDS).flatMap(([field, id]) => {
     const input = document.getElementById(id);
-    return input ? [[field, input.value.trim()]] : [];
+    return input ? [[field, field === 'maintenanceDate' && input.value ? input.value + '-01' : input.value.trim()]] : [];
   }));
 }
 
