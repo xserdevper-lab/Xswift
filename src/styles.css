@@ -126,6 +126,9 @@ h1, h2, h3, p { margin: 0; }
 .license-photo .photo-placeholder svg { width: 21px; height: 21px; }
 
 .fuel-section { margin-top: 14px; }
+.oil-section { margin-top: 10px; }
+.oil-card { padding: 13px 15px 12px; border-radius: 18px; background: #f0f0f0; }
+.oil-scale { gap: 10px; }
 .fuel-card { padding: 13px 15px 14px; border-radius: 18px; background: #f0f0f0; }
 .fuel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .fuel-heading p { color: var(--ink); font-size: 11px; font-weight: 550; }
@@ -285,6 +288,8 @@ h1, h2, h3, p { margin: 0; }
   .license-photo { width: 58px; height: 58px; }
   .fuel-card { padding: 12px 13px; }
   .fuel-section { margin-top: 12px; }
+  .oil-card { padding: 12px 13px; }
+  .oil-scale { font-size: 8px; }
   .fuel-summary-dark { min-height: 38px; }
   .data-card { gap: 8px; }
   .data-row { grid-template-columns: 28px minmax(0, 1fr); grid-template-rows: 29px auto; gap: 8px 6px; min-height: 116px; padding: 11px; border-radius: 16px; }

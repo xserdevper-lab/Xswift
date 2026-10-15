@@ -9,7 +9,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="./icons/xswift-icon.svg">
   <link rel="apple-touch-icon" href="./icons/xswift-180.png">
-  <link rel="stylesheet" href="./src/styles.css?v=11">
+  <link rel="stylesheet" href="./src/styles.css?v=12">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="./config.js?v=3"></script>
   <script type="module" src="./src/main.js"></script>
@@ -77,6 +77,16 @@
             <div class="fuel-summary-dark"><span>Budget used</span><strong id="fuel-used-percent">0%</strong></div>
             <button id="fuel-add-button" class="button button-dark" type="button" disabled>Add fill</button>
           </div>
+        </div>
+      </section>
+      <section class="oil-section" aria-labelledby="oil-change-title">
+        <div class="oil-card">
+          <div class="fuel-heading">
+            <div><p id="oil-change-title">Oil change cycle</p><strong id="oil-change-status">Not set</strong></div>
+            <span id="oil-change-next-date" class="fuel-spent">Next change: —</span>
+          </div>
+          <div id="oil-change-progress" class="fuel-progress" role="progressbar" aria-label="Oil change cycle progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="oil-change-progress-fill"></span></div>
+          <div class="fuel-scale oil-scale"><span id="oil-change-last-date">Last change: —</span><span id="oil-change-interval">Every — months</span></div>
         </div>
       </section>
       </section>
@@ -189,6 +199,10 @@
       <label class="form-field">Insurance expiration date<input id="ce-ins-expire" name="insExpire" type="date"></label>
       <label class="form-field">Driver's license expiration date<input id="ce-license-expire" name="licenseExpire" type="date"></label>
       <label class="form-field">Battery replacement date<input id="ce-battery-date" name="batteryDate" type="date"></label>
+      <div class="form-row">
+        <label class="form-field">Last oil change date<input id="ce-oil-change-date" name="oilChangeDate" type="date"></label>
+        <label class="form-field">Oil change cycle (months)<input id="ce-oil-change-interval" name="oilChangeIntervalMonths" type="number" min="1" max="60" step="1" inputmode="numeric" placeholder="e.g. 6"></label>
+      </div>
       <div class="dialog-actions"><button class="button button-outline" type="button" data-close-dialog>Cancel</button><button id="save-car-button" class="button button-red" type="submit">Save details</button></div>
     </form>
   </dialog>
