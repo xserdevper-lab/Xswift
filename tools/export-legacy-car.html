@@ -21,7 +21,7 @@
         link.href = url;
         link.download = 'xswift-car-export.json';
         link.click();
-        URL.revokeObjectURL(url);
+        window.setTimeout(() => URL.revokeObjectURL(url), 60000);
         status.textContent = 'ดาวน์โหลดแล้ว ไปที่แอปใหม่และเลือก “นำเข้าข้อมูลรถเดิม”';
       } catch (error) { status.textContent = error.message; }
     });

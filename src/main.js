@@ -133,6 +133,8 @@ async function importLegacyFile(file) {
   if (!file) return;
   try {
     const imported = parseLegacyCar(await file.text());
+    const hasCarData = Object.values(imported.record).some(value => value.trim()) || imported.carImage || imported.licenseImage;
+    if (!hasCarData) throw new Error('ไฟล์นี้ยังไม่มีข้อมูลรถให้นำเข้า');
     if (!window.confirm('นำเข้าข้อมูลรถจากไฟล์นี้และบันทึกทับข้อมูลรถใน Google Sheets หรือไม่?')) return;
     const next = { ...state.record, ...imported.record };
     const token = getAccessToken();
@@ -181,7 +183,10 @@ function bindEvents() {
   $('sign-in-button').addEventListener('click', connectGoogle);
   $('connect-button').addEventListener('click', connectGoogle);
   $('sign-out-button').addEventListener('click', signOutGoogle);
-  $('edit-car-button').addEventListener('click', () => $('car-modal').showModal());
+  $('edit-car-button').addEventListener('click', () => {
+    renderCar(state.record);
+    $('car-modal').showModal();
+  });
   $('car-form').addEventListener('submit', saveCarDetails);
   $('save-memo-button').addEventListener('click', saveMemo);
   document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => $('car-modal').close()));
