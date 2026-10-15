@@ -343,7 +343,9 @@ async function initialize() {
   bindEvents();
   setCarFormEnabled(false);
   if (!requireConfig()) {
-    $('connection-message').textContent = 'The Apps Script backend URL is not configured yet.';
+    $('connection-title').textContent = 'Setup required';
+    $('connection-message').textContent = 'The Apps Script backend URL has not been configured yet.';
+    $('pin-form').hidden = true;
     $('pin-input').disabled = true;
     $('pin-submit-button').disabled = true;
     setSyncState('error', 'Setup required');
