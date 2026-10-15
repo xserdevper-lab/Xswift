@@ -249,10 +249,11 @@ function setupInstallApp() {
 let sheetConnected = false;
 function sheetStatus(message) { const node = $('sheet-sync-status'); if(node) node.textContent = message; }
 function sheetControls(busy = false) {
-  for (const id of ['sheet-connect','sheet-pull','sheet-push','sheet-disconnect']) {
+  for (const id of ['sheet-connect','sheet-pull','sheet-push','sheet-disconnect','sheet-sync-button']) {
     const node = $(id); if(node) node.disabled = busy;
   }
   $('sheet-sync-actions').hidden = !sheetConnected;
+  $('sheet-sync-button').disabled = busy || !sheetConnected;
 }
 async function connectSheet() {
   const pin = $('sheet-pin').value.trim();
@@ -297,6 +298,7 @@ function disconnectSheet() {
 
 function bindEvents() {
   $('sheet-connect').addEventListener('click',connectSheet);
+  $('sheet-sync-button').addEventListener('click', () => { if (!sheetConnected) { sheetStatus('Connect Google Sheets first.'); return; } $('sheet-sync-actions').hidden = false; $('sheet-sync-actions').scrollIntoView({behavior:'smooth',block:'nearest'}); });
   $('sheet-pull').addEventListener('click',pullSheet);
   $('sheet-push').addEventListener('click',pushSheet);
   $('sheet-disconnect').addEventListener('click',disconnectSheet);
