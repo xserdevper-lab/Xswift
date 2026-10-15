@@ -1,11 +1,11 @@
-import { loadCar, saveCar } from './car-sheets.js';
-import { loadCarImage } from './car-drive.js';
+import { loadCar, saveCar } from './car-sheets.js?v=1';
+import { loadCarImage } from './car-drive.js?v=1';
 
-export async function syncCar(accessToken, { spreadsheetId }) {
-  const record = await loadCar(accessToken, spreadsheetId);
+export async function syncCar() {
+  const record = await loadCar();
   const [carImageResult, licenseImageResult] = await Promise.allSettled([
-    loadCarImage(accessToken, record.carImageFileId),
-    loadCarImage(accessToken, record.licenseImageFileId)
+    loadCarImage(record.carImageFileId),
+    loadCarImage(record.licenseImageFileId)
   ]);
   return {
     record,
@@ -15,6 +15,7 @@ export async function syncCar(accessToken, { spreadsheetId }) {
   };
 }
 
-export function saveSyncedCar(accessToken, config, record) {
-  return saveCar(accessToken, config.spreadsheetId, record);
+export function saveSyncedCar(_config, record) {
+  return saveCar(record);
 }
+
