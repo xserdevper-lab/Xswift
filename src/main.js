@@ -1,7 +1,7 @@
 import { initializeGoogleAuth, requestAccessToken, refreshAccessTokenSilently, getAccessToken, signOut } from './google-auth.js';
 import { uploadCarImage } from './car-drive.js';
 import { syncCar, saveSyncedCar } from './car-sync.js';
-import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js';
+import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=2';
 import { parseLegacyCar } from './legacy-import.js';
 
 const config = window.XSWIFT_CONFIG || {};
