@@ -6,6 +6,9 @@
   <meta name="theme-color" content="#ffffff">
   <meta name="description" content="Your vehicle, documents, and notes in one place">
   <title>Vehicle</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="./icons/xswift-icon.svg">
+  <link rel="apple-touch-icon" href="./icons/xswift-180.png">
   <link rel="stylesheet" href="./src/styles.css?v=7">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="./config.js?v=3"></script>
@@ -18,6 +21,7 @@
       <div class="header-actions">
         <span id="sync-status" class="sync-status" role="status" aria-live="polite">Not connected</span>
         <button id="sign-in-button" class="button button-dark" type="button">Reconnect Google</button>
+        <button id="install-app-button" class="button button-outline" type="button" hidden>Install app</button>
       </div>
     </header>
 
@@ -161,6 +165,7 @@
   </dialog>
 </body>
 </html>
+
 
 
 
