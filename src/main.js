@@ -21,7 +21,7 @@ function setBusy(busy) {
   $('sign-in-button').disabled = busy || !requireConfig();
   $('connect-button').disabled = busy || !requireConfig();
   $('sign-out-button').disabled = busy || !connected;
-  for (const id of ['edit-car-button', 'save-memo-button', 'save-car-button']) {
+  for (const id of ['edit-car-button', 'save-memo-button', 'save-car-button', 'fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button']) {
     $(id).disabled = busy || !connected;
   }
   $('car-content').classList.toggle('is-loading', busy);
@@ -113,6 +113,37 @@ async function saveCarDetails(event) {
 async function saveMemo() {
   const next = { ...state.record, memo: $('car-memo').value };
   try { await saveRecord(next, 'Saved.'); } catch {}
+}
+
+async function addFuelExpense(event) {
+  event.preventDefault();
+  const amount = Number($('fuel-amount-input').value);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    toast('Enter a fuel amount greater than zero.');
+    return;
+  }
+  const fuelLimit = Math.max(1, Number(state.record.fuelLimit) || 5000);
+  const fuelSpent = Math.max(0, Number(state.record.fuelSpent) || 0) + amount;
+  const next = { ...state.record, fuelLimit: String(fuelLimit), fuelSpent: String(fuelSpent) };
+  try {
+    await saveRecord(next, 'Fuel fill saved.');
+    renderCar(next);
+    $('fuel-amount-input').value = '';
+  } catch {}
+}
+
+async function saveFuelLimit(event) {
+  event.preventDefault();
+  const fuelLimit = Number($('fuel-limit-input').value);
+  if (!Number.isFinite(fuelLimit) || fuelLimit <= 0) {
+    toast('Enter a fuel budget limit greater than zero.');
+    return;
+  }
+  const next = { ...state.record, fuelLimit: String(fuelLimit) };
+  try {
+    await saveRecord(next, 'Fuel budget saved.');
+    renderCar(next);
+  } catch {}
 }
 
 async function replacePhoto(file, key, imageId, placeholderId) {
@@ -263,6 +294,8 @@ function bindEvents() {
   });
   $('car-form').addEventListener('submit', saveCarDetails);
   $('save-memo-button').addEventListener('click', saveMemo);
+  $('fuel-form').addEventListener('submit', addFuelExpense);
+  $('fuel-settings-form').addEventListener('submit', saveFuelLimit);
   document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => $('car-modal').close()));
   $('car-img-input').addEventListener('change', event => {
     replacePhoto(event.target.files[0], 'carImageFileId', 'car-img-preview', 'car-img-placeholder');
