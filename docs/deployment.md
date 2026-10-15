@@ -1,55 +1,44 @@
 # ติดตั้ง Xswift บน GitHub Pages
 
-## 1. ตั้งค่า Google Cloud
+## 1. ตั้ง Apps Script
 
-1. เลือกหรือสร้าง Google Cloud project
-2. ใน **APIs & Services → Library** เปิด **Google Sheets API** และ **Google Drive API**
-3. ที่ **Google Auth Platform** ตั้งค่า Branding และ Audience ให้ตรงกับบัญชีที่จะใช้งาน หากแอปอยู่สถานะ Testing ให้เพิ่มบัญชี Google ที่จะใช้เป็น test user
-4. สร้าง OAuth Client ID ชนิด **Web application**
-5. เพิ่ม Authorized JavaScript origin ของหน้าเว็บ เช่น `https://xserdevper-lab.github.io` (ใส่เฉพาะ origin ไม่ใส่ path `/Xswift/`)
-6. ไม่ต้องสร้างหรือฝัง client secret สำหรับการใช้งาน GIS token client ฝั่ง browser
+ทำขั้นตอนใน [คู่มือ Apps Script](../apps-script/README.md) จากบัญชีเจ้าของ Google Sheet เพื่อสร้าง PIN และ deploy web app
 
-ขอบเขตสิทธิ์ที่แอปร้องขอคือ Sheets read/write และ Drive `drive.file` สำหรับไฟล์ที่แอปสร้าง
+การตั้งค่า deploy ต้องเป็น **Execute as: Me** และ **Who has access: Anyone** เพื่อให้ GitHub Pages ส่งคำขอได้ โดย backend ตรวจ PIN ก่อนให้เข้าถึงข้อมูลรถและไฟล์รูปที่แอปสร้าง
 
-## 2. ตั้งค่าแอป
+## 2. ตั้ง URL ให้แอป
 
-แก้ `config.js`:
+ใส่ URL ที่ Apps Script แสดงหลัง deploy (ลงท้ายด้วย `/exec`) ใน `config.js`:
 
 ```js
 window.XSWIFT_CONFIG = {
-  googleClientId: "ค่าที่ลงท้ายด้วย .apps.googleusercontent.com",
+  appsScriptUrl: "https://script.google.com/macros/s/DEPLOYMENT_ID/exec",
   spreadsheetId: "1xxaLYpoQvzXhIzkHllMToVo-SKeM4TKNik7kqDbKID4"
 };
 ```
 
-Client ID และ Spreadsheet ID เป็น public identifiers สำหรับแอปเว็บ ไม่มีรหัสลับให้ใส่ใน source ห้ามวาง access token หรือ client secret ใน repository
+URL เป็น public ได้ แต่ห้ามใส่ PIN หรือ signing secret ใน config หรือ source code
 
-## 3. ให้สิทธิ์สเปรดชีต
-
-แชร์สเปรดชีตที่กำหนดใน config ให้บัญชี Google ที่ผู้ใช้จะเลือกตอนเชื่อมต่อ โดยให้สิทธิ์ **Editor** ข้อมูลจะถูกเก็บในแท็บ `รถยนต์` รูปแบบสองคอลัมน์ `key` และ `value` เมื่อไม่มีแท็บนี้ แอปจะสร้างขึ้นและเริ่มด้วยฟิลด์รถที่กำหนด หากแท็บชื่อนี้มีข้อมูลแต่หัวตารางไม่ตรง แอปจะแจ้งข้อผิดพลาดและไม่เขียนทับ
-
-## 4. เปิด GitHub Pages
+## 3. เปิด GitHub Pages
 
 1. Push source ไปยัง branch ที่ต้องการให้ Pages ใช้
 2. ใน GitHub เปิด **Settings → Pages**
-3. เลือก **Deploy from a branch**, ระบุ branch และโฟลเดอร์ `/ (root)` แล้วบันทึก
-4. เพิ่ม origin ของหน้า Pages ใน OAuth Client ID หากเปลี่ยน domain ภายหลัง
-5. เปิด URL ของ Pages แล้วทดสอบด้วยบัญชี Google ที่มีสิทธิ์แก้ไขชีต
+3. เลือก **Deploy from a branch**, เลือก branch `main` และโฟลเดอร์ `/ (root)`
+4. เปิด `https://xserdevper-lab.github.io/Xswift/` ผ่าน HTTPS
 
-สำหรับรีโป `xserdevper-lab/Xswift` URL ปกติคือ `https://xserdevper-lab.github.io/Xswift/` และ OAuth origin คือ `https://xserdevper-lab.github.io`.
+## ความปลอดภัยและการใช้งาน
 
-## ข้อจำกัดและข้อมูลส่วนบุคคล
-
-- ต้องเชื่อมต่ออินเทอร์เน็ตและลงชื่อเข้าใช้ใหม่หลังโหลดหน้าเว็บ; access token อยู่ในหน่วยความจำและไม่เก็บถาวร
-- แอปนี้ไม่มี local cache ของข้อมูลรถ หากเชื่อมต่อ Google ไม่ได้จะแสดงข้อผิดพลาดแทนการแสดงข้อมูลเก่าที่อาจคลาดเคลื่อน
-- การอัปโหลดรูปใหม่จะเก็บรูปใหม่ใน Drive แล้วเปลี่ยน file ID ในชีต รูปเก่าที่แอปอัปโหลดไว้จะไม่ถูกลบอัตโนมัติ
-- หาก OAuth app อยู่ในสถานะ Testing, Google อาจจำกัดบัญชีผู้ทดสอบหรืออายุการอนุญาต
-- ต้องพิจารณาขั้นตอน OAuth verification ของ Google ก่อนเปิดใช้ในวงกว้าง
+- ข้อมูลเขียนลงแท็บ `รถยนต์` เท่านั้น; รูปที่เลือกจาก Settings จะเก็บใน Drive ของเจ้าของสคริปต์
+- ผู้ใช้กรอก PIN 10 หลักเพื่อรับเซสชัน 12 ชั่วโมงที่เก็บใน sessionStorage ของแท็บนั้น
+- PIN ถูกเก็บบน Apps Script เป็น salted/iterated hash และ session ลงลายมือชื่อด้วย secret ใน Script Properties
+- พยายามกรอก PIN ผิด 8 ครั้งจะพักการยืนยัน 10 นาที
+- Web app ทำงานด้วยสิทธิ์เจ้าของ ดังนั้นผู้ที่มีทั้ง URL และ PIN ใช้สิทธิ์นั้นเข้าถึงข้อมูลรถชุดนี้ได้ ควรเก็บ PIN เป็นความลับ
+- หากแก้ Apps Script ให้สร้าง deployment version ใหม่ใน **Deploy → Manage deployments → Edit → New version**
+- หากลืม PIN ให้รัน `setupXswift` ใหม่จากโปรเจกต์ที่ผูกกับชีต ซึ่งจะยกเลิกเซสชันเดิมทั้งหมด
 
 ## แก้ปัญหา
 
-- **ตั้งค่า OAuth Client ID**: แทนค่าตัวอย่างใน `config.js` และตรวจ Authorized JavaScript origins
-- **403 / insufficient permissions**: เปิด Sheets API/Drive API และตรวจว่าเลือกบัญชีที่มีสิทธิ์ Editor
-- **ไม่พบสเปรดชีต**: ตรวจ Spreadsheet ID และสิทธิ์แชร์ของบัญชี Google
-- **รูปโหลดไม่ได้**: ตรวจสิทธิ์ Drive ที่อนุญาตและลองเชื่อมต่อ Google ใหม่
-- **แท็บรูปแบบไม่ตรง**: อย่าแก้ข้อมูลแท็บเดิมด้วยแอป ให้ตรวจว่าหัวแถวแรกเป็น `key | value` หรือเปลี่ยนชื่อแท็บเดิมก่อนเชื่อมต่อ
+- **Setup required**: ตรวจว่า `config.js` มี URL ที่ลงท้ายด้วย `/exec`
+- **PIN required**: กรอก PIN 10 หลักจากขั้นตอน owner setup
+- **Could not reach backend**: ตรวจอินเทอร์เน็ตและสถานะ Apps Script deployment
+- **บันทึกไม่ได้/สิทธิ์ผิดพลาด**: ตรวจ Apps Script authorization กับ Sheets และ Drive APIs และตรวจว่าชีตมีแท็บ `รถยนต์` โครงสร้าง `key | value`
