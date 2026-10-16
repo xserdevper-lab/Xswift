@@ -2,6 +2,7 @@ const XSWIFT_SHEET_ID = '1xxaLYpoQvzXhIzkHllMToVo-SKeM4TKNik7kqDbKID4';
 const XSWIFT_TAB_NAME = 'รถยนต์';
 const XSWIFT_SERVICE_HISTORY_TAB_NAME = 'ประวัติบำรุงรักษา';
 const XSWIFT_MAX_SERVICE_RECORDS = 500;
+const XSWIFT_MAX_SERVICE_ITEMS = 50;
 const XSWIFT_MAX_SERVICE_DESCRIPTION_LENGTH = 500;
 const XSWIFT_SESSION_MS = 12 * 60 * 60 * 1000;
 const XSWIFT_PIN_ITERATIONS = 5000;
@@ -155,26 +156,39 @@ function loadServiceHistory_() {
   if (sheet.getLastRow() < 2) return [];
   return sheet.getRange(2, 1, sheet.getLastRow() - 1, 5).getDisplayValues()
     .filter(row => row.some(value => value !== ''))
-    .map(row => ({ id: row[0], date: row[1], description: unescapeSheetText_(row[2]), amount: Number(row[3]), createdAt: row[4] }));
+    .map(row => ({ id: row[0], date: row[1], items: parseServiceItems_(unescapeSheetText_(row[2]), Number(row[3])), amount: Number(row[3]), createdAt: row[4] }));
 }
 
 function saveServiceHistory_(input) {
   if (!Array.isArray(input) || input.length > XSWIFT_MAX_SERVICE_RECORDS) {
     throw apiError_('INVALID_DATA', 'Service history must contain no more than 500 records.');
   }
-  const records = input.map(record => {
+  const normalized = input.map(record => {
     if (!record || typeof record !== 'object' || Array.isArray(record)) throw apiError_('INVALID_DATA', 'A service record is invalid.');
     const id = String(record.id || '').trim();
     const date = String(record.date || '').trim();
-    const description = String(record.description || '').trim();
-    const amount = Number(record.amount);
+    const legacyDescription = String(record.description || '').trim();
+    const legacyAmount = Number(record.amount);
+    const items = Array.isArray(record.items) ? record.items : (legacyDescription && Number.isFinite(legacyAmount) ? [{ description: legacyDescription, quantity: 1, unitPrice: legacyAmount }] : null);
     const createdAt = String(record.createdAt || '');
-    if (!/^[A-Za-z0-9_-]{1,80}$/.test(id) || !isValidServiceDate_(date) || !description || description.length > XSWIFT_MAX_SERVICE_DESCRIPTION_LENGTH) {
+    if (!/^[A-Za-z0-9_-]{1,80}$/.test(id) || !isValidServiceDate_(date) || !Array.isArray(items) || !items.length || items.length > XSWIFT_MAX_SERVICE_ITEMS) {
       throw apiError_('INVALID_DATA', 'A service record has invalid details.');
     }
-    if (!Number.isFinite(amount) || amount < 0 || amount > 100000000) throw apiError_('INVALID_DATA', 'A service record has an invalid cost.');
-    return [id, date, safeSheetText_(description), String(Math.round(amount * 100) / 100), createdAt];
+    const cleanItems = items.map(item => {
+      const description = String(item.description || '').trim();
+      const quantity = Number(item.quantity);
+      const unitPrice = Number(item.unitPrice);
+      if (!description || description.length > XSWIFT_MAX_SERVICE_DESCRIPTION_LENGTH || /[\u0000-\u001f\u007f]/.test(description) || !Number.isInteger(quantity) || quantity < 1 || quantity > 999 || !Number.isFinite(unitPrice) || unitPrice < 0 || unitPrice > 100000000) {
+        throw apiError_('INVALID_DATA', 'A service receipt item has invalid details.');
+      }
+      return { description: description, quantity: quantity, unitPrice: Math.round(unitPrice * 100) / 100, amount: Math.round(quantity * unitPrice * 100) / 100 };
+    });
+    const amount = Math.round(cleanItems.reduce((sum, item) => sum + item.amount, 0) * 100) / 100;
+    if (!Number.isFinite(amount) || amount > 100000000) throw apiError_('INVALID_DATA', 'A service receipt total is invalid.');
+    return { id: id, date: date, items: cleanItems, amount: amount, createdAt: createdAt };
   });
+  if (normalized.some(record => JSON.stringify(record.items).length > 45000) || JSON.stringify(normalized).length > 450000) throw apiError_('INVALID_DATA', 'Service history is too large to save.');
+  const records = normalized.map(record => [record.id, record.date, safeSheetText_(JSON.stringify(record.items)), String(record.amount), record.createdAt]);
 
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
@@ -190,7 +204,15 @@ function saveServiceHistory_(input) {
   } finally {
     lock.releaseLock();
   }
-  return input.map(record => ({ id: String(record.id).trim(), date: String(record.date).trim(), description: String(record.description).trim(), amount: Math.round(Number(record.amount) * 100) / 100, createdAt: String(record.createdAt || '') }));
+  return normalized;
+}
+
+function parseServiceItems_(value, legacyAmount) {
+  try {
+    const items = JSON.parse(value);
+    if (Array.isArray(items) && items.length) return items;
+  } catch (_) {}
+  return [{ description: value, quantity: 1, unitPrice: legacyAmount, amount: legacyAmount }];
 }
 
 function getServiceHistorySheet_() {

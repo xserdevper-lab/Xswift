@@ -9,9 +9,9 @@
   <link rel="manifest" href="./manifest.webmanifest?v=2">
   <link rel="icon" type="image/svg+xml" href="./icons/xswift-icon.svg?v=2">
   <link rel="apple-touch-icon" href="./icons/xswift-icon.svg?v=2">
-  <link rel="stylesheet" href="./src/styles.css?v=21">
+  <link rel="stylesheet" href="./src/styles.css?v=22">
   <script src="./config.js?v=6"></script>
-  <script type="module" src="./src/main.js?v=28"></script>
+  <script type="module" src="./src/main.js?v=29"></script>
 
 </head>
 <body>
@@ -120,8 +120,8 @@
           <button id="add-service-record-button" class="button button-outline" type="button">Add record</button>
         </div>
         <p class="service-history-note">Records are saved on this device. Use Google Sheets sync in Settings to back them up.</p>
-        <div class="service-history-summary"><span id="service-history-count">0 records</span><strong id="service-history-total">฿0</strong></div>
-        <p id="service-history-empty" class="service-history-empty">No service records yet.</p>
+        <div class="service-history-summary"><span id="service-history-count">0 receipts</span><strong id="service-history-total">฿0</strong></div>
+        <p id="service-history-empty" class="service-history-empty">No service receipts yet.</p>
         <ul id="service-history-list" class="service-history-list" aria-label="Service and repair records" hidden></ul>
       </section>
       <section class="data-section fuel-reset-section" aria-labelledby="fuel-reset-title">
@@ -242,13 +242,24 @@
   </dialog>
   <dialog id="service-dialog" class="edit-dialog">
     <form id="service-form">
-      <div class="dialog-head"><div><p class="eyebrow">VEHICLE MAINTENANCE</p><h2>Add service record</h2></div><button class="close-button" type="button" aria-label="Close" data-close-service-dialog>×</button></div>
+      <div class="dialog-head"><div><p class="eyebrow">VEHICLE MAINTENANCE</p><h2>Add service receipt</h2></div><button class="close-button" type="button" aria-label="Close" data-close-service-dialog>×</button></div>
       <label class="form-field" for="service-date-input">Date<input id="service-date-input" type="date" required></label>
-      <label class="form-field" for="service-description-input">Service or repair details<textarea id="service-description-input" rows="3" maxlength="500" placeholder="e.g. Engine oil and filter replacement" required></textarea></label>
-      <label class="form-field" for="service-cost-input">Cost (THB)<input id="service-cost-input" type="number" min="0" max="100000000" step="0.01" inputmode="decimal" placeholder="e.g. 1,500" required></label>
-      <div class="dialog-actions"><button class="button button-outline" type="button" data-close-service-dialog>Cancel</button><button id="save-service-record-button" class="button button-dark" type="submit">Save record</button></div>
+      <div class="service-receipt-label"><span>Item</span><span>Qty</span><span>Price / unit</span><span>Total</span><span></span></div>
+      <div id="service-receipt-items" class="service-receipt-items"></div>
+      <button id="add-service-item-button" class="button button-outline service-add-item" type="button">Add item</button>
+      <div class="service-receipt-total"><span>Total</span><strong id="service-receipt-total">฿0.00</strong></div>
+      <div class="dialog-actions"><button class="button button-outline" type="button" data-close-service-dialog>Cancel</button><button id="save-service-record-button" class="button button-dark" type="submit">Save receipt</button></div>
     </form>
   </dialog>
+  <template id="service-item-template">
+    <div class="service-receipt-row">
+      <input class="service-item-description" type="text" maxlength="500" placeholder="Service or part" aria-label="Service or part" required>
+      <input class="service-item-quantity" type="number" min="1" max="999" step="1" inputmode="numeric" value="1" aria-label="Quantity" required>
+      <input class="service-item-price" type="number" min="0" max="100000000" step="0.01" inputmode="decimal" placeholder="0.00" aria-label="Price per unit in THB" required>
+      <span class="service-item-total">฿0.00</span>
+      <button class="service-item-remove" type="button" aria-label="Remove item">×</button>
+    </div>
+  </template>
 </body>
 </html>
 

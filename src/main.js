@@ -1,5 +1,5 @@
 
-import { loginWithPin, getCar as getRemoteCar, saveCar as saveRemoteCar, getServiceHistory as getRemoteServiceHistory, saveServiceHistory as saveRemoteServiceHistory, clearSession } from './xswift-api.js?v=3';
+import { loginWithPin, getCar as getRemoteCar, saveCar as saveRemoteCar, getServiceHistory as getRemoteServiceHistory, saveServiceHistory as saveRemoteServiceHistory, clearSession } from './xswift-api.js?v=4';
 import { uploadCarImage } from './car-drive.js?v=2';
 import { syncCar, saveSyncedCar } from './car-sync.js?v=2';
 import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=5';
@@ -48,26 +48,36 @@ function setBusy(busy) {
 }
 function requireConfig() { return true; }
 
-const serviceCurrency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'THB', maximumFractionDigits: 2 });
+const serviceCurrency = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', minimumFractionDigits: 2, maximumFractionDigits: 2 });
 function renderServiceHistory() {
   const list = $('service-history-list');
   if (!list) return;
   list.replaceChildren();
   const total = serviceHistory.reduce((sum, record) => sum + record.amount, 0);
-  $('service-history-count').textContent = `${serviceHistory.length} ${serviceHistory.length === 1 ? 'record' : 'records'}`;
+  $('service-history-count').textContent = `${serviceHistory.length} ${serviceHistory.length === 1 ? 'receipt' : 'receipts'}`;
   $('service-history-total').textContent = serviceCurrency.format(total);
   $('service-history-empty').hidden = serviceHistory.length > 0;
   list.hidden = serviceHistory.length === 0;
   for (const record of serviceHistory) {
     const item = document.createElement('li'); item.className = 'service-history-item';
     const details = document.createElement('div'); details.className = 'service-history-item-details';
-    const title = document.createElement('strong'); title.textContent = record.description;
     const date = document.createElement('time'); date.dateTime = record.date;
     date.textContent = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${record.date}T00:00:00Z`));
+    const lines = document.createElement('ul'); lines.className = 'service-history-receipt-lines';
+    for (const receiptItem of record.items) {
+      const line = document.createElement('li');
+      const description = document.createElement('span'); description.textContent = receiptItem.description;
+      const quantity = document.createElement('span'); quantity.textContent = `×${receiptItem.quantity}`;
+      const lineTotal = document.createElement('strong'); lineTotal.textContent = serviceCurrency.format(receiptItem.amount);
+      line.append(description, quantity, lineTotal); lines.append(line);
+    }
+    const total = document.createElement('div'); total.className = 'service-history-receipt-total';
+    const totalLabel = document.createElement('span'); totalLabel.textContent = 'Total';
     const amount = document.createElement('strong'); amount.className = 'service-history-amount'; amount.textContent = serviceCurrency.format(record.amount);
+    total.append(totalLabel, amount);
     const remove = document.createElement('button'); remove.className = 'service-history-delete'; remove.type = 'button'; remove.textContent = 'Delete';
-    remove.setAttribute('aria-label', `Delete ${record.description} service record`); remove.addEventListener('click', () => deleteServiceRecord(record.id));
-    details.append(title, date); item.append(details, amount, remove); list.append(item);
+    remove.setAttribute('aria-label', `Delete service receipt from ${date.textContent}`); remove.addEventListener('click', () => deleteServiceRecord(record.id));
+    details.append(date, lines, total); item.append(details, remove); list.append(item);
   }
 }
 
@@ -81,16 +91,48 @@ async function saveServiceRecord(event) {
   event.preventDefault();
   const form = $('service-form'); if (!form.reportValidity()) return;
   try {
-    const record = createServiceRecord({ date: $('service-date-input').value, description: $('service-description-input').value, amount: Number($('service-cost-input').value) });
-    serviceHistory = saveLocalServiceHistory([record, ...serviceHistory]); renderServiceHistory(); form.reset(); $('service-dialog').close(); toast('Service record saved on this device.');
+    const items = [...$('service-receipt-items').querySelectorAll('.service-receipt-row')].map(row => ({
+      description: row.querySelector('.service-item-description').value,
+      quantity: Number(row.querySelector('.service-item-quantity').value),
+      unitPrice: Number(row.querySelector('.service-item-price').value)
+    }));
+    const record = createServiceRecord({ date: $('service-date-input').value, items });
+    serviceHistory = saveLocalServiceHistory([record, ...serviceHistory]); renderServiceHistory(); form.reset(); $('service-receipt-items').replaceChildren(); $('service-dialog').close(); toast('Service receipt saved on this device.');
   } catch (error) { toast(error.message); }
 }
 
 function deleteServiceRecord(id) {
   const record = serviceHistory.find(item => item.id === id);
-  if (!record || !window.confirm(`Delete the service record “${record.description}”?`)) return;
-  try { serviceHistory = saveLocalServiceHistory(serviceHistory.filter(item => item.id !== id)); renderServiceHistory(); toast('Service record deleted from this device.'); }
+  if (!record || !window.confirm('Delete this service receipt?')) return;
+  try { serviceHistory = saveLocalServiceHistory(serviceHistory.filter(item => item.id !== id)); renderServiceHistory(); toast('Service receipt deleted from this device.'); }
   catch (error) { toast(error.message); }
+}
+
+function addServiceItemRow() {
+  const template = $('service-item-template');
+  const row = template.content.firstElementChild.cloneNode(true);
+  row.querySelector('.service-item-remove').addEventListener('click', () => {
+    row.remove();
+    updateServiceDraftTotal();
+  });
+  row.querySelectorAll('input').forEach(input => input.addEventListener('input', updateServiceDraftTotal));
+  $('service-receipt-items').append(row);
+  updateServiceDraftTotal();
+  row.querySelector('.service-item-description').focus();
+}
+
+function updateServiceDraftTotal() {
+  const rows = [...$('service-receipt-items').querySelectorAll('.service-receipt-row')];
+  let total = 0;
+  rows.forEach(row => {
+    const quantity = Math.max(0, Number(row.querySelector('.service-item-quantity').value) || 0);
+    const price = Math.max(0, Number(row.querySelector('.service-item-price').value) || 0);
+    const lineTotal = quantity * price;
+    total += lineTotal;
+    row.querySelector('.service-item-total').textContent = serviceCurrency.format(lineTotal);
+    row.querySelector('.service-item-remove').disabled = rows.length === 1;
+  });
+  $('service-receipt-total').textContent = serviceCurrency.format(total);
 }
 
 async function loadVehicle() {
@@ -487,7 +529,14 @@ function bindEvents() {
   $('fuel-form').addEventListener('submit', addFuelExpense);
   $('fuel-settings-form').addEventListener('submit', saveFuelLimit);
   $('reset-fuel-usage-button').addEventListener('click', resetFuelUsage);
-  $('add-service-record-button').addEventListener('click', () => { $('service-date-input').value = localTodayISO(); $('service-dialog').showModal(); });
+  $('add-service-record-button').addEventListener('click', () => {
+    $('service-form').reset();
+    $('service-receipt-items').replaceChildren();
+    $('service-date-input').value = localTodayISO();
+    addServiceItemRow();
+    $('service-dialog').showModal();
+  });
+  $('add-service-item-button').addEventListener('click', addServiceItemRow);
   $('service-form').addEventListener('submit', saveServiceRecord);
   document.querySelectorAll('[data-close-service-dialog]').forEach(button => button.addEventListener('click', () => $('service-dialog').close()));
   document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => $('car-modal').close()));
