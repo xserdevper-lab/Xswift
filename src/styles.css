@@ -312,6 +312,16 @@ h1, h2, h3, p { margin: 0; }
 .service-history-item-details time { color: var(--muted); font-size: 10px; }
 .service-history-amount { white-space: nowrap; font-size: 11px; }
 .service-history-delete { padding: 5px 7px; border: 0; border-radius: 8px; background: var(--ground); color: var(--muted); font: inherit; font-size: 10px; cursor: pointer; }
+.service-history-receipt > summary { display: grid; grid-template-columns: minmax(0, 1fr) auto 12px; align-items: center; gap: 10px; list-style: none; cursor: pointer; }
+.service-history-receipt > summary::-webkit-details-marker { display: none; }
+.service-history-receipt-date { display: grid; gap: 4px; }
+.service-history-receipt-heading { font-size: 12px; font-weight: 600; }
+.service-history-receipt-date time { color: var(--muted); font-size: 10px; }
+.service-history-chevron { width: 8px; height: 8px; border-right: 1.5px solid var(--muted); border-bottom: 1.5px solid var(--muted); transform: rotate(45deg) translateY(-2px); transition: transform .15s ease; }
+.service-history-receipt[open] > summary { padding-bottom: 10px; border-bottom: 1px dashed var(--line); }
+.service-history-receipt[open] .service-history-chevron { transform: rotate(225deg) translate(-1px, -1px); }
+.service-history-receipt .service-history-item-details { padding-top: 9px; }
+.service-history-receipt .service-history-delete { justify-self: end; margin-top: 3px; }
 .service-history-receipt-lines { display: grid; gap: 6px; margin: 4px 0; padding: 0; list-style: none; }
 .service-history-receipt-lines li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: baseline; gap: 10px; font-size: 11px; }
 .service-history-receipt-lines li span:first-child { overflow-wrap: anywhere; }

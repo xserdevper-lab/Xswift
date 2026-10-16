@@ -60,9 +60,17 @@ function renderServiceHistory() {
   list.hidden = serviceHistory.length === 0;
   for (const record of serviceHistory) {
     const item = document.createElement('li'); item.className = 'service-history-item';
-    const details = document.createElement('div'); details.className = 'service-history-item-details';
+    const receipt = document.createElement('details'); receipt.className = 'service-history-receipt';
+    const summary = document.createElement('summary');
+    const heading = document.createElement('span'); heading.className = 'service-history-receipt-heading'; heading.textContent = 'Service receipt';
     const date = document.createElement('time'); date.dateTime = record.date;
     date.textContent = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${record.date}T00:00:00Z`));
+    const summaryDate = document.createElement('span'); summaryDate.className = 'service-history-receipt-date'; summaryDate.append(heading, date);
+    const amount = document.createElement('strong'); amount.className = 'service-history-amount'; amount.textContent = serviceCurrency.format(record.amount);
+    const chevron = document.createElement('span'); chevron.className = 'service-history-chevron'; chevron.setAttribute('aria-hidden', 'true');
+    summary.append(summaryDate, amount, chevron);
+
+    const details = document.createElement('div'); details.className = 'service-history-item-details';
     const lines = document.createElement('ul'); lines.className = 'service-history-receipt-lines';
     for (const receiptItem of record.items) {
       const line = document.createElement('li');
@@ -73,11 +81,11 @@ function renderServiceHistory() {
     }
     const total = document.createElement('div'); total.className = 'service-history-receipt-total';
     const totalLabel = document.createElement('span'); totalLabel.textContent = 'Total';
-    const amount = document.createElement('strong'); amount.className = 'service-history-amount'; amount.textContent = serviceCurrency.format(record.amount);
-    total.append(totalLabel, amount);
+    const receiptTotal = document.createElement('strong'); receiptTotal.className = 'service-history-amount'; receiptTotal.textContent = serviceCurrency.format(record.amount);
+    total.append(totalLabel, receiptTotal);
     const remove = document.createElement('button'); remove.className = 'service-history-delete'; remove.type = 'button'; remove.textContent = 'Delete';
     remove.setAttribute('aria-label', `Delete service receipt from ${date.textContent}`); remove.addEventListener('click', () => deleteServiceRecord(record.id));
-    details.append(date, lines, total); item.append(details, remove); list.append(item);
+    details.append(lines, total, remove); receipt.append(summary, details); item.append(receipt); list.append(item);
   }
 }
 
