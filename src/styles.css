@@ -203,6 +203,26 @@ h1, h2, h3, p { margin: 0; }
 }
 .memo-section textarea:disabled { background: #fafafb; color: var(--muted); }
 .footnote { margin-top: 16px; color: #999ba0; font-size: 10px; text-align: center; }
+.fuel-prices-panel { padding-top: 15px; }
+.fuel-prices-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.fuel-prices-heading h2 { margin-top: 4px; font-size: 25px; font-weight: 650; letter-spacing: -.7px; }
+.fuel-prices-heading .button { display: flex; align-items: center; gap: 7px; }
+.fuel-prices-heading .button svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.fuel-prices-description { margin-top: 7px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.fuel-price-card { margin-top: 18px; overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: #fff; box-shadow: 0 5px 18px #11121608; }
+.fuel-price-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; padding: 12px 13px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 9px; line-height: 1.5; }
+.fuel-price-table-wrap { overflow-x: auto; }
+.fuel-price-table { width: 100%; border-collapse: collapse; font-size: 11px; font-variant-numeric: tabular-nums; }
+.fuel-price-table thead { background: #f5f5f6; }
+.fuel-price-table th, .fuel-price-table td { padding: 12px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.fuel-price-table tr:last-child th, .fuel-price-table tr:last-child td { border-bottom: 0; }
+.fuel-price-table thead th { color: #66686d; font-size: 10px; font-weight: 600; }
+.fuel-price-table th:first-child { text-align: left; }
+.fuel-price-table tbody th { color: var(--ink); font-weight: 500; }
+.fuel-price-table tbody td { font-weight: 600; }
+.fuel-price-placeholder { padding: 28px 12px !important; color: var(--muted); text-align: center !important; white-space: normal !important; }
+.fuel-prices-footnote { margin-top: 12px; color: var(--muted); font-size: 9px; line-height: 1.6; }
+.fuel-prices-footnote a { color: var(--ink); text-underline-offset: 2px; }
 .legacy-import-section { margin-top: 14px; padding-top: 8px; border-top: 1px solid var(--line); text-align: center; }
 .legacy-import-section .button { font-size: 10px; }
 

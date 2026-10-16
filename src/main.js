@@ -8,6 +8,19 @@ import { parseLegacyCar } from './legacy-import.js';
 const config = window.XSWIFT_CONFIG || {};
 const state = { record: null, toastTimer: 0, installPrompt: null };
 const $ = id => document.getElementById(id);
+const fuelPriceFeed = 'https://www.eppo.go.th/wp-json/oil-api/v1/oil-prices';
+const fuelTypes = [
+  ['Gasohol 95', 'gh95'],
+  ['Gasohol 91', 'gh91'],
+  ['Gasohol E20', 'e20'],
+  ['Gasohol E85', 'e85'],
+  ['Gasoline 95', 'gl95'],
+  ['Premium Gasohol 95', 'gs95p'],
+  ['Premium Gasohol 99', 'gs99p'],
+  ['Diesel B7', 'ds'],
+  ['Premium Diesel', 'pds'],
+  ['Diesel B20', 'dsb20']
+];
 
 function toast(message) {
   const element = $('toast');
@@ -209,6 +222,65 @@ function activateTab(activeTab, focusTab = false) {
   });
   if (focusTab) activeTab.focus();
   window.scrollTo(0, 0);
+  if (selectedId === 'fuel-prices') loadFuelPrices();
+}
+
+function formatEffectiveTime(date, time) {
+  if (!date) return '—';
+  const parsed = new Date(`${date}T${time || '00:00'}:00+07:00`);
+  if (Number.isNaN(parsed.getTime())) return date;
+  return new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Bangkok'
+  }).format(parsed);
+}
+
+function renderFuelPrices(payload) {
+  const { ptt, bcp } = payload.data || {};
+  if (!ptt || !bcp) throw new Error('The price feed is missing PTT or Bangchak data.');
+  const tableRows = fuelTypes.map(([label, key]) => {
+    const row = document.createElement('tr');
+    const type = document.createElement('th');
+    type.scope = 'row';
+    type.textContent = label;
+    row.append(type);
+    for (const [brand, record] of [['ptt', ptt], ['bcp', bcp]]) {
+      const cell = document.createElement('td');
+      const rawPrice = record[`oil_${brand}_${key}`];
+      const number = rawPrice === null || rawPrice === undefined || rawPrice === '-' ? NaN : Number(rawPrice);
+      cell.textContent = Number.isFinite(number) && number >= 0 ? number.toFixed(2) : '—';
+      row.append(cell);
+    }
+    return row;
+  });
+  $('fuel-price-rows').replaceChildren(...tableRows);
+  $('fuel-prices-updated').textContent = `PTT effective ${formatEffectiveTime(ptt.oil_ptt_date, ptt.oil_ptt_time)} · Bangchak effective ${formatEffectiveTime(bcp.oil_bcp_date, bcp.oil_bcp_time)}`;
+}
+
+async function loadFuelPrices() {
+  const button = $('refresh-fuel-prices');
+  const status = $('fuel-prices-state');
+  button.disabled = true;
+  status.textContent = 'Updating…';
+  try {
+    const response = await fetch(fuelPriceFeed, { cache: 'no-store', headers: { Accept: 'application/json' } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    if (payload.status !== 'success') throw new Error('The price feed is unavailable.');
+    renderFuelPrices(payload);
+    status.textContent = payload.last_updated ? `Feed updated ${payload.last_updated}` : 'Prices updated';
+  } catch (error) {
+    $('fuel-prices-updated').textContent = 'Current prices are unavailable.';
+    const row = document.createElement('tr');
+    const message = document.createElement('td');
+    message.colSpan = 3;
+    message.className = 'fuel-price-placeholder';
+    message.textContent = 'Could not load current prices. Tap Refresh to try again.';
+    row.append(message);
+    $('fuel-price-rows').replaceChildren(row);
+    status.textContent = 'Unable to update';
+  } finally {
+    button.disabled = false;
+  }
 }
 
 function setupInstallApp() {
@@ -297,6 +369,7 @@ function disconnectSheet() {
 }
 
 function bindEvents() {
+  $('refresh-fuel-prices').addEventListener('click', loadFuelPrices);
   $('sheet-connect').addEventListener('click',connectSheet);
   $('sheet-sync-button').addEventListener('click', () => { if (!sheetConnected) { sheetStatus('Connect Google Sheets first.'); return; } $('sheet-sync-actions').hidden = false; $('sheet-sync-actions').scrollIntoView({behavior:'smooth',block:'nearest'}); });
   $('sheet-pull').addEventListener('click',pullSheet);

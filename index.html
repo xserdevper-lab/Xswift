@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="Your vehicle, documents, and notes in one place">
+  <meta name="description" content="Your vehicle, documents, fuel budget, and live fuel prices">
   <title>Vehicle</title>
   <link rel="manifest" href="./manifest.webmanifest?v=2">
   <link rel="icon" type="image/svg+xml" href="./icons/xswift-icon.svg?v=2">
   <link rel="apple-touch-icon" href="./icons/xswift-icon.svg?v=2">
-  <link rel="stylesheet" href="./src/styles.css?v=16">
+  <link rel="stylesheet" href="./src/styles.css?v=17">
   <script src="./config.js?v=6"></script>
-  <script type="module" src="./src/main.js?v=23"></script>
+  <script type="module" src="./src/main.js?v=24"></script>
 
 </head>
 <body>
@@ -119,9 +119,6 @@
         <p class="fuel-reset-description">Clear the accumulated fuel amount. Your budget limit will stay the same.</p>
         <button id="reset-fuel-usage-button" class="button button-outline fuel-reset-button" type="button" disabled>Reset fuel usage</button>
       </section>
-      </section>
-
-      <section id="panel-memo" class="tab-panel" data-tab-panel="memo" role="tabpanel" aria-labelledby="tab-memo" tabindex="0" hidden>
       <section id="memo-section" class="data-section memo-section" aria-labelledby="memo-title">
         <div class="section-heading">
           <h3 id="memo-title">Vehicle notes</h3>
@@ -133,7 +130,27 @@
         <button id="import-legacy-button" class="button button-quiet" type="button">Import existing vehicle data</button>
         <input id="legacy-file-input" type="file" accept="application/json,.json" hidden>
       </section>
-      <div class="footnote">Your data is stored on this device only. Clearing browser data may delete it.</div>
+      </section>
+
+      <section id="panel-fuel-prices" class="tab-panel fuel-prices-panel" data-tab-panel="fuel-prices" role="tabpanel" aria-labelledby="tab-fuel-prices" tabindex="0" hidden>
+        <div class="fuel-prices-heading">
+          <div><p class="eyebrow">LIVE RETAIL PRICES</p><h2>Fuel prices</h2></div>
+          <button id="refresh-fuel-prices" class="button button-outline" type="button" aria-label="Refresh fuel prices">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6.5L20 12M4 12l2 5.5A7 7 0 0 0 18.4 15"/></svg>
+            <span>Refresh</span>
+          </button>
+        </div>
+        <p class="fuel-prices-description">Official retail prices in Bangkok and nearby provinces, in baht per litre.</p>
+        <div class="fuel-price-card">
+          <div class="fuel-price-meta"><span id="fuel-prices-updated">Loading current prices…</span><span id="fuel-prices-state" role="status" aria-live="polite"></span></div>
+          <div class="fuel-price-table-wrap">
+            <table class="fuel-price-table">
+              <thead><tr><th scope="col">Fuel type</th><th scope="col">PTT</th><th scope="col">Bangchak</th></tr></thead>
+              <tbody id="fuel-price-rows"><tr><td colspan="3" class="fuel-price-placeholder">Loading fuel prices…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <p class="fuel-prices-footnote">Prices are standard retail references and may exclude local maintenance tax. <a href="https://www.eppo.go.th/" target="_blank" rel="noopener noreferrer">Source: Energy Policy and Planning Office (EPPO)</a></p>
       </section>
       <section id="panel-settings" class="tab-panel settings-panel" data-tab-panel="settings" role="tabpanel" aria-labelledby="tab-settings" tabindex="0" hidden>
         <h2>Settings</h2>
@@ -158,9 +175,9 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v4h6V3M8 12h8m-8 4h8"/></svg>
           <span>Details</span>
         </button>
-        <button id="tab-memo" class="nav-link" type="button" role="tab" aria-selected="false" aria-controls="panel-memo" data-tab-target="memo" tabindex="-1">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M8 9h8m-8 4h8m-8 4h5"/></svg>
-          <span>Notes</span>
+        <button id="tab-fuel-prices" class="nav-link" type="button" role="tab" aria-selected="false" aria-controls="panel-fuel-prices" data-tab-target="fuel-prices" tabindex="-1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h12M5 21V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v16M5 7h8M8 11h2"/><path d="M13 8h2l3 3v5a2 2 0 0 0 4 0V9l-2-2"/><path d="M17 11h2"/></svg>
+          <span>Fuel prices</span>
         </button>
         <button id="tab-settings" class="nav-link" type="button" role="tab" aria-selected="false" aria-controls="panel-settings" data-tab-target="settings" tabindex="-1">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.6 2.8-.2-.1a1.7 1.7 0 0 0-1.8.4l-.1.1h-3.2l-.1-.2a1.7 1.7 0 0 0-1.6-1l-.2.1-2.8-1.6.1-.2a1.7 1.7 0 0 0-.4-1.8l-.1-.1v-3.2l.2-.1a1.7 1.7 0 0 0 1-1.6l-.1-.2 1.6-2.8.2.1a1.7 1.7 0 0 0 1.8-.4l.1-.1h3.2l.1.2a1.7 1.7 0 0 0 1.6 1l.2-.1 2.8 1.6-.1.2a1.7 1.7 0 0 0 .4 1.8l.1.1V15Z" transform="translate(-2 -2) scale(1.15)"/></svg>
