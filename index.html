@@ -9,9 +9,9 @@
   <link rel="manifest" href="./manifest.webmanifest?v=2">
   <link rel="icon" type="image/svg+xml" href="./icons/xswift-icon.svg?v=2">
   <link rel="apple-touch-icon" href="./icons/xswift-icon.svg?v=2">
-  <link rel="stylesheet" href="./src/styles.css?v=30">
+  <link rel="stylesheet" href="./src/styles.css?v=31">
   <script src="./config.js?v=6"></script>
-  <script type="module" src="./src/main.js?v=36"></script>
+  <script type="module" src="./src/main.js?v=37"></script>
 
 </head>
 <body>
@@ -110,16 +110,22 @@
 
       <section id="panel-details" class="tab-panel" data-tab-panel="details" role="tabpanel" aria-labelledby="tab-details" tabindex="0" hidden>
       <section class="data-section installment-section" aria-labelledby="installment-title">
-        <div class="section-heading">
-          <h3 id="installment-title">Installment progress</h3>
-          <strong id="installment-progress-percent" class="installment-percent">0%</strong>
-        </div>
         <div class="installment-card">
-          <div class="installment-card-heading">
-            <strong id="installment-paid-count">0 of 72 installments paid</strong>
-            <span id="installment-remaining-count">72 remaining</span>
+          <div class="installment-card-top">
+            <span class="installment-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M4 9h16M7 14h4m6 0h.01"/></svg>
+            </span>
+            <div class="installment-card-title">
+              <h3 id="installment-title">Installment progress</h3>
+              <p id="installment-paid-count">0 of 72 installments paid</p>
+            </div>
+            <strong id="installment-progress-percent" class="installment-percent">0%</strong>
           </div>
           <div id="installment-progress" class="installment-progress" role="progressbar" aria-label="Installment progress" aria-valuemin="0" aria-valuemax="72" aria-valuenow="0"><span id="installment-progress-fill"></span></div>
+          <div class="installment-card-bottom">
+            <span id="installment-remaining-count" class="installment-remaining-count">72 installments remaining</span>
+            <p class="installment-time-left"><span id="installment-time-label">Time remaining</span><strong id="installment-time-remaining">6 years</strong></p>
+          </div>
         </div>
       </section>
       <section class="data-section" aria-labelledby="document-title">

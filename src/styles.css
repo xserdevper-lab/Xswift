@@ -200,13 +200,21 @@ h1, h2, h3, p { margin: 0; }
 
 .data-section { margin-top: 25px; scroll-margin-top: 84px; }
 .installment-section { margin-top: 14px; }
-.installment-percent { color: var(--ink); font-size: 15px; font-variant-numeric: tabular-nums; }
-.installment-card { padding: 14px; border: 1px solid var(--line); border-radius: 17px; background: var(--ground); }
-.installment-card-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
-.installment-card-heading strong { font-size: 12px; font-weight: 600; }
-.installment-card-heading span { color: var(--muted); font-size: 10px; white-space: nowrap; }
-.installment-progress { height: 7px; overflow: hidden; border-radius: 99px; background: #dedee1; }
+.installment-card { padding: 16px; border: 1px solid var(--line); border-radius: 19px; background: linear-gradient(145deg, #fff 25%, #f7f7f8 100%); box-shadow: 0 8px 22px #11121608; }
+.installment-card-top { display: flex; align-items: center; gap: 11px; }
+.installment-icon { display: grid; width: 42px; height: 42px; flex: 0 0 42px; place-items: center; border-radius: 14px; background: var(--ink); color: #fff; }
+.installment-icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.installment-card-title { min-width: 0; flex: 1; }
+.installment-card-title h3 { font-size: 13px; font-weight: 650; line-height: 1.3; }
+.installment-card-title p { margin-top: 3px; color: var(--muted); font-size: 10px; }
+.installment-percent { display: grid; min-width: 47px; height: 30px; padding: 0 8px; place-items: center; border-radius: 10px; background: #ededee; color: var(--ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+.installment-progress { height: 7px; margin-top: 15px; overflow: hidden; border-radius: 99px; background: #e5e5e7; }
 .installment-progress > span { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--ink); transition: width .2s ease; }
+.installment-card-bottom { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.installment-remaining-count { color: var(--muted); font-size: 10px; }
+.installment-time-left { display: grid; gap: 3px; text-align: right; }
+.installment-time-left span { color: var(--muted); font-size: 9px; }
+.installment-time-left strong { font-size: 14px; font-weight: 650; font-variant-numeric: tabular-nums; }
 .fuel-reset-section { padding-top: 4px; }
 .fuel-reset-description { margin: -3px 0 11px; color: var(--muted); font-size: 11px; line-height: 1.5; }
 .fuel-reset-button { border-color: #e6c9cc; color: var(--danger); }

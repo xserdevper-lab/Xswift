@@ -1,4 +1,4 @@
-import { getLanguageLocale, t } from './i18n.js?v=3';
+import { getLanguageLocale, t } from './i18n.js?v=4';
 
 const FORM_FIELDS = {
   model: 'ce-model', plate: 'ce-plate', price: 'ce-price', taxRenew: 'ce-tax-renew',
@@ -83,9 +83,28 @@ export function renderCar(record = {}) {
     ? Math.max(0, Math.min(TOTAL_INSTALLMENTS, Math.floor(rawInstallmentsPaid)))
     : 0;
   const installmentPercent = Math.round((installmentsPaid / TOTAL_INSTALLMENTS) * 100);
+  const installmentsRemaining = TOTAL_INSTALLMENTS - installmentsPaid;
+  const yearsRemaining = Math.floor(installmentsRemaining / 12);
+  const monthsRemaining = installmentsRemaining % 12;
   put('installment-progress-percent', `${installmentPercent}%`);
   put('installment-paid-count', t('{paid} of {total} installments paid', { paid: installmentsPaid, total: TOTAL_INSTALLMENTS }));
-  put('installment-remaining-count', t('{count} remaining', { count: TOTAL_INSTALLMENTS - installmentsPaid }));
+  put('installment-remaining-count', t('{count} installments remaining', { count: installmentsRemaining }));
+  let remainingDuration;
+  if (installmentsRemaining === 0) {
+    remainingDuration = t('All installments paid');
+  } else if (yearsRemaining && monthsRemaining) {
+    remainingDuration = t('{years} {yearUnit} {months} {monthUnit}', {
+      years: yearsRemaining,
+      yearUnit: t(yearsRemaining === 1 ? 'year' : 'years'),
+      months: monthsRemaining,
+      monthUnit: t(monthsRemaining === 1 ? 'month' : 'months')
+    });
+  } else if (yearsRemaining) {
+    remainingDuration = t('{count} {unit}', { count: yearsRemaining, unit: t(yearsRemaining === 1 ? 'year' : 'years') });
+  } else {
+    remainingDuration = t('{count} {unit}', { count: monthsRemaining, unit: t(monthsRemaining === 1 ? 'month' : 'months') });
+  }
+  put('installment-time-remaining', remainingDuration);
   const installmentProgress = document.getElementById('installment-progress');
   const installmentProgressFill = document.getElementById('installment-progress-fill');
   if (installmentProgress) installmentProgress.setAttribute('aria-valuenow', String(installmentsPaid));

@@ -64,13 +64,17 @@ Object.assign(messages.ja, {
 });
 
 Object.assign(messages.th, {
-  'Installment progress':'ความคืบหน้าการผ่อนชำระ','Installments paid (of 72)':'จำนวนงวดที่ชำระแล้ว (จาก 72 งวด)','{paid} of {total} installments paid':'ชำระแล้ว {paid} จาก {total} งวด','{count} remaining':'เหลืออีก {count} งวด'
+  'Installment progress':'ความคืบหน้าการผ่อนชำระ','{paid} of {total} installments paid':'ชำระแล้ว {paid} จาก {total} งวด','{count} installments remaining':'เหลือ {count} งวด','Time remaining':'ระยะเวลาที่เหลือ','All installments paid':'ชำระครบทุกงวดแล้ว','year':'ปี','years':'ปี','month':'เดือน','months':'เดือน','{years} {yearUnit} {months} {monthUnit}':'{years} {yearUnit} {months} {monthUnit}','{count} {unit}':'{count} {unit}'
 });
 Object.assign(messages.ko, {
-  'Installment progress':'할부 진행률','Installments paid (of 72)':'납부한 할부 회차 (총 72회)','{paid} of {total} installments paid':'총 {total}회 중 {paid}회 납부','{count} remaining':'{count}회 남음'
+  'Installment progress':'할부 진행률','{paid} of {total} installments paid':'총 {total}회 중 {paid}회 납부','{count} installments remaining':'{count}회 남음','Time remaining':'남은 기간','All installments paid':'모든 할부금을 납부했습니다','year':'년','years':'년','month':'개월','months':'개월','{years} {yearUnit} {months} {monthUnit}':'{yearUnit} {years} {monthUnit} {months}','{count} {unit}':'{unit} {count}'
 });
 Object.assign(messages.ja, {
-  'Installment progress':'分割払いの進捗','Installments paid (of 72)':'支払済み回数（全72回）','{paid} of {total} installments paid':'全{total}回中{paid}回支払済み','{count} remaining':'残り{count}回'
+  'Installment progress':'分割払いの進捗','{paid} of {total} installments paid':'全{total}回中{paid}回支払済み','{count} installments remaining':'残り{count}回','Time remaining':'残り期間','All installments paid':'すべての分割払いが完了しました','year':'年','years':'年','month':'か月','months':'か月','{years} {yearUnit} {months} {monthUnit}':'{years}{yearUnit} {months}{monthUnit}','{count} {unit}':'{count}{unit}'
+});
+
+Object.assign(messages.en, {
+  'Installment progress':'Installment progress','{paid} of {total} installments paid':'{paid} of {total} installments paid','{count} installments remaining':'{count} installments remaining','Time remaining':'Time remaining','All installments paid':'All installments paid','year':'year','years':'years','month':'month','months':'months','{years} {yearUnit} {months} {monthUnit}':'{years} {yearUnit} {months} {monthUnit}','{count} {unit}':'{count} {unit}'
 });
 
 Object.assign(messages.th, {
