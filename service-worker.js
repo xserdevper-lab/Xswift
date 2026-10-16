@@ -1,12 +1,12 @@
-const CACHE_NAME = 'xswift-shell-v27';
+const CACHE_NAME = 'xswift-shell-v28';
 const APP_ROOT = new URL('./', self.registration.scope);
 const SHELL_FILES = [
   './',
   './index.html',
   './manifest.webmanifest?v=2',
   './config.js?v=6',
-  './src/styles.css?v=18',
-  './src/main.js?v=25',
+  './src/styles.css?v=19',
+  './src/main.js?v=26',
   './fuel-prices.json',
   './src/car-app.js?v=5',
   './src/car-drive.js?v=2',

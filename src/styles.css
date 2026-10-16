@@ -209,6 +209,7 @@ h1, h2, h3, p { margin: 0; }
 .fuel-prices-heading .button { display: flex; align-items: center; gap: 7px; }
 .fuel-prices-heading .button svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .fuel-prices-description { margin-top: 7px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.fuel-prices-subheading { margin-top: 22px; font-size: 16px; font-weight: 620; letter-spacing: -.2px; }
 .fuel-price-card { margin-top: 18px; overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: #fff; box-shadow: 0 5px 18px #11121608; }
 .fuel-price-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; padding: 12px 13px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 9px; line-height: 1.5; }
 .fuel-price-table-wrap { overflow-x: auto; }

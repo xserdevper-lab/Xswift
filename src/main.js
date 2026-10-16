@@ -254,6 +254,35 @@ function renderFuelPrices(payload) {
   });
   $('fuel-price-rows').replaceChildren(...tableRows);
   $('fuel-prices-updated').textContent = `PTT effective ${formatEffectiveTime(ptt.oil_ptt_date, ptt.oil_ptt_time)} · Bangchak effective ${formatEffectiveTime(bcp.oil_bcp_date, bcp.oil_bcp_time)}`;
+
+  const tomorrow = payload.tomorrow;
+  const tomorrowRows = fuelTypes.map(([label, key]) => {
+    const row = document.createElement('tr');
+    const type = document.createElement('th');
+    type.scope = 'row';
+    type.textContent = label;
+    row.append(type);
+    for (const brand of ['ptt', 'bcp']) {
+      const cell = document.createElement('td');
+      const rawPrice = tomorrow?.[brand]?.[key];
+      const number = rawPrice === null || rawPrice === undefined || rawPrice === '' || rawPrice === '-' ? NaN : Number(rawPrice);
+      cell.textContent = Number.isFinite(number) && number >= 0 ? number.toFixed(2) : '—';
+      row.append(cell);
+    }
+    return row;
+  });
+  $('fuel-price-tomorrow-rows').replaceChildren(...tomorrowRows);
+  $('fuel-prices-tomorrow-date').textContent = tomorrow?.effectiveDate
+    ? `Prices effective ${formatFuelPriceDate(tomorrow.effectiveDate)}`
+    : 'Tomorrow’s price date unavailable';
+  $('fuel-prices-tomorrow-state').textContent = tomorrow?.bcp ? 'Bangchak data available' : 'Bangchak data unavailable';
+}
+
+function formatFuelPriceDate(date) {
+  const parsed = new Date(`${date}T05:00:00+07:00`);
+  return Number.isNaN(parsed.getTime()) ? date : new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Bangkok'
+  }).format(parsed);
 }
 
 async function loadFuelPrices() {
@@ -277,6 +306,11 @@ async function loadFuelPrices() {
     message.textContent = 'Could not load current prices. Tap Refresh to try again.';
     row.append(message);
     $('fuel-price-rows').replaceChildren(row);
+    $('fuel-prices-tomorrow-date').textContent = 'Tomorrow’s prices are unavailable.';
+    $('fuel-prices-tomorrow-state').textContent = 'Unable to update';
+    const tomorrowRow = row.cloneNode(true);
+    tomorrowRow.firstElementChild.textContent = 'Could not load tomorrow’s prices. Tap Refresh to try again.';
+    $('fuel-price-tomorrow-rows').replaceChildren(tomorrowRow);
     status.textContent = 'Unable to update';
   } finally {
     button.disabled = false;
