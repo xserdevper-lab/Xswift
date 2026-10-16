@@ -5,10 +5,15 @@ import { syncCar, saveSyncedCar } from './car-sync.js?v=2';
 import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=5';
 import { parseLegacyCar } from './legacy-import.js';
 import { loadServiceHistory as loadLocalServiceHistory, saveServiceHistory as saveLocalServiceHistory, createServiceRecord } from './service-history.js';
+import { loadWeatherLocation, saveWeatherLocation, getCurrentLocation, fetchCurrentWeather, describeWeather, isRainCode, weatherIconSvg } from './weather.js?v=1';
 
 const config = window.XSWIFT_CONFIG || {};
 const state = { record: null, toastTimer: 0, installPrompt: null };
 let serviceHistory = loadLocalServiceHistory();
+let weatherLocation = loadWeatherLocation();
+let weatherBusy = false;
+let weatherRefreshTimer = 0;
+let lastWeatherRefresh = 0;
 const $ = id => document.getElementById(id);
 const fuelPriceFeed = './fuel-prices.json';
 const fuelTypes = [
@@ -87,6 +92,109 @@ function renderServiceHistory() {
     remove.setAttribute('aria-label', `Delete service receipt from ${date.textContent}`); remove.addEventListener('click', () => deleteServiceRecord(record.id));
     details.append(lines, total, remove); receipt.append(summary, details); item.append(receipt); list.append(item);
   }
+}
+
+function renderWeather(snapshot = weatherLocation) {
+  const current = snapshot?.weather;
+  if (!current) {
+    $('weather-temperature').textContent = '—°';
+    $('weather-condition').textContent = 'Use your location for a local update';
+    $('weather-feels-like').textContent = 'Feels like —°';
+    $('weather-wind').textContent = 'Wind — km/h';
+    $('weather-icon').innerHTML = weatherIconSvg('cloud');
+    $('weather-updated').textContent = 'Location not enabled';
+    $('weather-refresh-button').hidden = true;
+    $('weather-location-button').textContent = 'Use current location';
+    $('weather-safety-alert').hidden = true;
+    return;
+  }
+
+  const condition = describeWeather(current.weatherCode, current.isDay);
+  $('weather-icon').innerHTML = weatherIconSvg(condition.icon);
+  $('weather-icon').setAttribute('aria-label', condition.label);
+  $('weather-temperature').textContent = `${Math.round(current.temperature)}°`;
+  $('weather-condition').textContent = condition.label;
+  $('weather-feels-like').textContent = `Feels like ${Math.round(current.apparentTemperature ?? current.temperature)}°`;
+  $('weather-wind').textContent = `Wind ${Math.round(current.windSpeed)} km/h`;
+  const updatedAt = new Date(snapshot.fetchedAt || Date.now());
+  const updatedTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(updatedAt);
+  $('weather-updated').textContent = `Updated ${updatedTime}`;
+  $('weather-refresh-button').hidden = false;
+  $('weather-location-button').textContent = 'Update location';
+
+  let warning = '';
+  if (Number(current.weatherCode) >= 95) {
+    warning = 'Thunderstorm nearby. Slow down, keep extra distance, and avoid exposed roads.';
+  } else if (isRainCode(current.weatherCode) || current.precipitation > 0.1 || current.rain > 0.1 || current.showers > 0.1) {
+    warning = 'Rain is falling. Roads may be slippery—slow down, leave extra distance, and avoid sudden braking.';
+  } else if (current.rainExpected || Number(current.rainChanceNextHours) >= 60) {
+    warning = `Rain is likely in the next few hours${Number.isFinite(current.rainChanceNextHours) ? ` (${Math.round(current.rainChanceNextHours)}%)` : ''}. Drive carefully and leave extra distance.`;
+  } else if (current.windGusts >= 60) {
+    warning = 'Strong wind gusts are possible. Keep both hands on the wheel and take extra care.';
+  }
+  $('weather-safety-message').textContent = warning;
+  $('weather-safety-alert').hidden = !warning;
+}
+
+function setWeatherBusy(busy) {
+  weatherBusy = busy;
+  $('weather-location-button').disabled = busy;
+  $('weather-refresh-button').disabled = busy;
+  $('weather-location-button').textContent = busy
+    ? 'Updating…'
+    : (weatherLocation ? 'Update location' : 'Use current location');
+}
+
+async function fetchWeatherFor(location, updateDeviceLocation = false) {
+  if (weatherBusy) return;
+  const previous = weatherLocation;
+  setWeatherBusy(true);
+  $('weather-updated').textContent = updateDeviceLocation ? 'Finding your location…' : 'Updating weather…';
+  try {
+    let coords = location || previous;
+    if (updateDeviceLocation) {
+      coords = await getCurrentLocation();
+    } else if (coords && navigator.permissions?.query) {
+      try {
+        const permission = await navigator.permissions.query({ name: 'geolocation' });
+        if (permission.state === 'granted') coords = await getCurrentLocation();
+      } catch (_) { /* Use the saved approximate location when permission state is unavailable. */ }
+    }
+    if (!coords || !Number.isFinite(coords.latitude) || !Number.isFinite(coords.longitude)) {
+      renderWeather(null);
+      $('weather-condition').textContent = 'Use your location to see local weather';
+      return;
+    }
+    coords = { latitude: Math.round(coords.latitude * 100) / 100, longitude: Math.round(coords.longitude * 100) / 100 };
+    const weather = await fetchCurrentWeather(coords);
+    weatherLocation = saveWeatherLocation({ ...coords, weather, fetchedAt: Date.now() });
+    lastWeatherRefresh = Date.now();
+    renderWeather(weatherLocation);
+  } catch (error) {
+    if (previous?.weather) {
+      weatherLocation = previous;
+      renderWeather(previous);
+      $('weather-updated').textContent = `Showing last update · ${error.message}`;
+    } else {
+      renderWeather(null);
+      $('weather-condition').textContent = error.message;
+      $('weather-updated').textContent = 'Weather unavailable';
+    }
+  } finally { setWeatherBusy(false); }
+}
+
+function initializeWeather() {
+  renderWeather(weatherLocation);
+  if (weatherLocation) fetchWeatherFor(weatherLocation);
+  window.clearInterval(weatherRefreshTimer);
+  weatherRefreshTimer = window.setInterval(() => {
+    if (document.visibilityState === 'visible' && weatherLocation) fetchWeatherFor(weatherLocation);
+  }, 30 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && weatherLocation && Date.now() - lastWeatherRefresh >= 30 * 60 * 1000) {
+      fetchWeatherFor(weatherLocation);
+    }
+  });
 }
 
 function localTodayISO() {
@@ -506,6 +614,8 @@ function disconnectSheet() {
 
 function bindEvents() {
   $('refresh-fuel-prices').addEventListener('click', loadFuelPrices);
+  $('weather-location-button').addEventListener('click', () => fetchWeatherFor(null, true));
+  $('weather-refresh-button').addEventListener('click', () => fetchWeatherFor(weatherLocation));
   $('sheet-connect').addEventListener('click',connectSheet);
   $('sheet-sync-button').addEventListener('click', () => { if (!sheetConnected) { sheetStatus('Connect Google Sheets first.'); return; } $('sheet-sync-actions').hidden = false; $('sheet-sync-actions').scrollIntoView({behavior:'smooth',block:'nearest'}); });
   $('sheet-pull').addEventListener('click',pullSheet);
@@ -568,6 +678,7 @@ async function initialize() {
   setupInstallApp();
   bindEvents();
   renderServiceHistory();
+  initializeWeather();
   setCarFormEnabled(false);
   try {
     await loadVehicle();
