@@ -8,7 +8,7 @@ import { parseLegacyCar } from './legacy-import.js';
 const config = window.XSWIFT_CONFIG || {};
 const state = { record: null, toastTimer: 0, installPrompt: null };
 const $ = id => document.getElementById(id);
-const fuelPriceFeed = 'https://www.eppo.go.th/wp-json/oil-api/v1/oil-prices';
+const fuelPriceFeed = './fuel-prices.json';
 const fuelTypes = [
   ['Gasohol 95', 'gh95'],
   ['Gasohol 91', 'gh91'],
@@ -262,7 +262,7 @@ async function loadFuelPrices() {
   button.disabled = true;
   status.textContent = 'Updating…';
   try {
-    const response = await fetch(fuelPriceFeed, { cache: 'no-store', headers: { Accept: 'application/json' } });
+    const response = await fetch(fuelPriceFeed, { cache: 'no-store' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
     if (payload.status !== 'success') throw new Error('The price feed is unavailable.');
