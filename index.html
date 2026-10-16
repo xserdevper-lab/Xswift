@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="./icons/xswift-icon.svg?v=2">
   <link rel="stylesheet" href="./src/styles.css?v=31">
   <script src="./config.js?v=6"></script>
-  <script type="module" src="./src/main.js?v=37"></script>
+  <script type="module" src="./src/main.js?v=38"></script>
 
 </head>
 <body>
@@ -293,7 +293,10 @@
       </div>
       <label class="form-field">Insurance expiration date<input id="ce-ins-expire" name="insExpire" type="date"></label>
       <label class="form-field">Driver's license expiration date<input id="ce-license-expire" name="licenseExpire" type="date"></label>
-      <label class="form-field">Battery replacement date<input id="ce-battery-date" name="batteryDate" type="date"></label>
+      <div class="form-row">
+        <label class="form-field">Battery replacement date<input id="ce-battery-date" name="batteryDate" type="date"></label>
+        <label class="form-field">Battery replacement interval (months)<input id="ce-battery-interval" name="batteryIntervalMonths" type="number" min="1" max="60" step="1" inputmode="numeric" placeholder="24"></label>
+      </div>
       <div class="form-row">
         <label class="form-field">Maintenance ล่าสุด (เดือน/ปี)<input id="ce-maintenance-date" name="maintenanceDate" type="month"></label>
         <label class="form-field">รอบ Maintenance ถัดไป (เดือน)<input id="ce-maintenance-interval" name="maintenanceIntervalMonths" type="number" min="1" max="60" step="1" inputmode="numeric" placeholder="6" value="6"></label>

@@ -1,9 +1,10 @@
-import { getLanguageLocale, t } from './i18n.js?v=4';
+import { getLanguageLocale, t } from './i18n.js?v=5';
 
 const FORM_FIELDS = {
   model: 'ce-model', plate: 'ce-plate', price: 'ce-price', taxRenew: 'ce-tax-renew',
   taxExpire: 'ce-tax-expire', insType: 'ce-ins-type', insYear: 'ce-ins-year',
   insExpire: 'ce-ins-expire', licenseExpire: 'ce-license-expire', batteryDate: 'ce-battery-date',
+  batteryIntervalMonths: 'ce-battery-interval',
   maintenanceDate: 'ce-maintenance-date', maintenanceIntervalMonths: 'ce-maintenance-interval',
   installmentsPaid: 'ce-installments-paid'
 };
@@ -177,6 +178,7 @@ export function renderCar(record = {}) {
       ? (INSURANCE_TYPES.get(record[field]) || record[field] || '')
       : field === 'maintenanceDate' ? String(record[field] || '').slice(0,7)
       : field === 'maintenanceIntervalMonths' ? String(record[field] || 6)
+      : field === 'batteryIntervalMonths' ? String(record[field] || '')
       : field === 'installmentsPaid' ? String(installmentsPaid)
       : record[field] ?? '';
   }
@@ -189,6 +191,12 @@ export function readCarForm() {
     if (field === 'installmentsPaid') {
       const paid = Number(input.value);
       return [[field, String(Number.isFinite(paid) ? Math.max(0, Math.min(TOTAL_INSTALLMENTS, Math.floor(paid))) : 0)]];
+    }
+    if (field === 'batteryIntervalMonths') {
+      const raw = input.value.trim();
+      if (!raw) return [[field, '']];
+      const interval = Number(raw);
+      return [[field, String(Number.isFinite(interval) ? Math.max(1, Math.min(60, Math.floor(interval))) : '')]];
     }
     return [[field, field === 'maintenanceDate' && input.value ? input.value + '-01' : input.value.trim()]];
   }));
@@ -235,7 +243,7 @@ export function setCarFormEnabled(enabled) {
     const control = document.getElementById(id);
     if (control) control.disabled = !enabled;
   }
-  for (const id of ['fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button', 'reset-fuel-usage-button', 'ce-maintenance-date', 'ce-maintenance-interval', 'ce-installments-paid', 'decrease-installments', 'increase-installments']) {
+  for (const id of ['fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button', 'reset-fuel-usage-button', 'ce-maintenance-date', 'ce-maintenance-interval', 'ce-battery-interval', 'ce-installments-paid', 'decrease-installments', 'increase-installments']) {
     const control = document.getElementById(id);
     if (control) control.disabled = !enabled;
   }

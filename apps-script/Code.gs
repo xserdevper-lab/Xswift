@@ -11,7 +11,7 @@ const XSWIFT_MAX_IMAGE_BYTES = 1100000;
 const XSWIFT_ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
 const XSWIFT_FIELDS = [
   'model', 'plate', 'price', 'taxRenew', 'taxExpire', 'insType', 'insYear',
-  'insExpire', 'licenseExpire', 'batteryDate', 'maintenanceDate',
+  'insExpire', 'licenseExpire', 'batteryDate', 'batteryIntervalMonths', 'maintenanceDate',
   'maintenanceIntervalMonths', 'installmentsPaid', 'memo', 'carImageFileId', 'licenseImageFileId',
   'fuelLimit', 'fuelSpent'
 ];

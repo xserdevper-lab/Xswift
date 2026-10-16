@@ -1,4 +1,4 @@
-import { loadCar, saveCar } from './car-sheets.js?v=3';
+import { loadCar, saveCar } from './car-sheets.js?v=4';
 import { loadCarImage } from './car-drive.js?v=2';
 
 export async function syncCar() {

@@ -30,6 +30,20 @@ function nextMaintenanceDate(record) {
   return new Date(Date.UTC(dueYear, dueMonthIndex, 1));
 }
 
+function nextBatteryDate(record) {
+  const replaced = parseDateKey(record.batteryDate);
+  const rawInterval = Number(record.batteryIntervalMonths);
+  const interval = Math.floor(rawInterval);
+  if (!replaced || !Number.isFinite(rawInterval) || interval < 1 || interval > 60) return null;
+
+  const dueMonth = replaced.getUTCMonth() + interval;
+  const dueYear = replaced.getUTCFullYear() + Math.floor(dueMonth / 12);
+  const dueMonthIndex = dueMonth % 12;
+  const day = replaced.getUTCDate();
+  const lastDay = new Date(Date.UTC(dueYear, dueMonthIndex + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(dueYear, dueMonthIndex, Math.min(day, lastDay)));
+}
+
 function daysBetween(from, to) {
   return Math.round((to.getTime() - from.getTime()) / DAY_MS);
 }
@@ -40,6 +54,7 @@ export function getUpcomingReminders(record = {}, today = new Date()) {
     ['tax', 'Road tax', parseDateKey(record.taxExpire)],
     ['insurance', 'Insurance', parseDateKey(record.insExpire)],
     ['license', "Driver's license", parseDateKey(record.licenseExpire)],
+    ['battery', 'Battery', nextBatteryDate(record)],
     ['maintenance', 'Service center maintenance', nextMaintenanceDate(record)]
   ];
 

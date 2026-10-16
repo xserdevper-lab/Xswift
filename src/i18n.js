@@ -87,6 +87,16 @@ Object.assign(messages.ja, {
   'Decrease paid installments':'支払済み回数を減らす','Increase paid installments':'支払済み回数を増やす'
 });
 
+Object.assign(messages.th, {
+  'Battery':'แบตเตอรี่','Battery replacement date':'วันที่เปลี่ยนแบตเตอรี่','Battery replacement interval (months)':'รอบเปลี่ยนแบตเตอรี่ (เดือน)'
+});
+Object.assign(messages.ko, {
+  'Battery':'배터리','Battery replacement date':'배터리 교체일','Battery replacement interval (months)':'배터리 교체 주기 (개월)'
+});
+Object.assign(messages.ja, {
+  'Battery':'バッテリー','Battery replacement date':'バッテリー交換日','Battery replacement interval (months)':'バッテリー交換周期（月）'
+});
+
 let currentLanguage = languages.includes(localStorage.getItem(STORAGE_KEY)) ? localStorage.getItem(STORAGE_KEY) : 'en';
 const sourceText = new WeakMap();
 const sourceAttribute = new WeakMap();

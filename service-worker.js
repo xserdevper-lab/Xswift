@@ -1,4 +1,4 @@
-const CACHE_NAME = 'xswift-shell-v40';
+const CACHE_NAME = 'xswift-shell-v41';
 const APP_ROOT = new URL('./', self.registration.scope);
 const SHELL_FILES = [
   './',
@@ -6,17 +6,17 @@ const SHELL_FILES = [
   './manifest.webmanifest?v=2',
   './config.js?v=6',
   './src/styles.css?v=31',
-  './src/main.js?v=37',
+  './src/main.js?v=38',
   './fuel-prices.json',
-  './src/car-app.js?v=8',
+  './src/car-app.js?v=9',
   './src/car-drive.js?v=2',
-  './src/car-sheets.js?v=3',
-  './src/car-sync.js?v=3',
+  './src/car-sheets.js?v=4',
+  './src/car-sync.js?v=4',
   './src/xswift-api.js?v=4',
   './src/service-history.js',
   './src/weather.js?v=1',
-  './src/i18n.js?v=4',
-  './src/reminders.js?v=1',
+  './src/i18n.js?v=5',
+  './src/reminders.js?v=2',
   './src/legacy-import.js',
   './icons/xswift-icon.svg?v=2',
   './icons/ptt-logo.png',
