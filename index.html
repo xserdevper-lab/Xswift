@@ -9,9 +9,9 @@
   <link rel="manifest" href="./manifest.webmanifest?v=2">
   <link rel="icon" type="image/svg+xml" href="./icons/xswift-icon.svg?v=2">
   <link rel="apple-touch-icon" href="./icons/xswift-icon.svg?v=2">
-  <link rel="stylesheet" href="./src/styles.css?v=25">
+  <link rel="stylesheet" href="./src/styles.css?v=26">
   <script src="./config.js?v=6"></script>
-  <script type="module" src="./src/main.js?v=32"></script>
+  <script type="module" src="./src/main.js?v=33"></script>
 
 </head>
 <body>
@@ -53,6 +53,14 @@
           </span>
         </div>
       </div>
+      <section id="reminder-section" class="reminder-section" aria-labelledby="reminder-title" aria-live="polite" hidden>
+        <div class="reminder-heading">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 19h18.4L12 3Z"/><path d="M12 9v4m0 3h.01"/></svg>
+          <h3 id="reminder-title">Reminders</h3>
+          <span id="reminder-count" class="reminder-count"></span>
+        </div>
+        <ul id="reminder-list" class="reminder-list"></ul>
+      </section>
       <input id="license-img-input" type="file" accept="image/*" hidden>
 
       <section class="weather-card" aria-labelledby="weather-card-title">

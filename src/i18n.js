@@ -53,6 +53,16 @@ Object.assign(messages.ja, {
   'Your vehicle, documents, fuel budget, and live fuel prices':'車両、書類、燃料予算、最新の燃料価格','This browser does not support location.':'このブラウザーは位置情報に対応していません','Location permission is off. Allow location access in your browser settings and try again.':'位置情報の権限がオフです。ブラウザー設定で位置情報を許可して、もう一度お試しください','Could not get your location in time. Please try again.':'時間内に現在地を取得できませんでした。もう一度お試しください','Could not get your location. Check your device settings and try again.':'現在地を取得できません。端末設定を確認してもう一度お試しください','Weather service is temporarily unavailable.':'天気サービスは一時的に利用できません','Weather service returned incomplete data.':'天気サービスから不完全なデータが返されました','Weather update timed out. Please try again.':'天気の更新がタイムアウトしました。もう一度お試しください','Google Sheets sync':'Google Sheets同期'
 });
 
+Object.assign(messages.th, {
+  'Reminders':'การแจ้งเตือน','Due in {days} days':'ครบกำหนดในอีก {days} วัน','Due today':'ครบกำหนดวันนี้','Overdue by {days} days':'เลยกำหนดมาแล้ว {days} วัน'
+});
+Object.assign(messages.ko, {
+  'Reminders':'알림','Due in {days} days':'기한까지 {days}일','Due today':'오늘 만료','Overdue by {days} days':'기한이 {days}일 지났습니다'
+});
+Object.assign(messages.ja, {
+  'Reminders':'リマインダー','Due in {days} days':'期限まであと{days}日','Due today':'本日期限','Overdue by {days} days':'期限超過から{days}日'
+});
+
 let currentLanguage = languages.includes(localStorage.getItem(STORAGE_KEY)) ? localStorage.getItem(STORAGE_KEY) : 'en';
 const sourceText = new WeakMap();
 const sourceAttribute = new WeakMap();

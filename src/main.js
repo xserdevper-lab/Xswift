@@ -7,6 +7,7 @@ import { parseLegacyCar } from './legacy-import.js';
 import { loadServiceHistory as loadLocalServiceHistory, saveServiceHistory as saveLocalServiceHistory, createServiceRecord } from './service-history.js';
 import { loadWeatherLocation, saveWeatherLocation, getCurrentLocation, fetchCurrentWeather, describeWeather, isRainCode, weatherIconSvg } from './weather.js?v=1';
 import { applyLanguage, getLanguageLocale, t } from './i18n.js?v=1';
+import { getUpcomingReminders, formatReminderDate } from './reminders.js?v=1';
 
 const config = window.XSWIFT_CONFIG || {};
 const state = { record: null, toastTimer: 0, installPrompt: null };
@@ -37,6 +38,41 @@ function toast(message) {
   element.classList.add('show');
   window.clearTimeout(state.toastTimer);
   state.toastTimer = window.setTimeout(() => element.classList.remove('show'), 2800);
+}
+
+function renderVehicle(record) {
+  renderCar(record);
+  renderReminders(record);
+}
+
+function renderReminders(record = {}) {
+  const section = $('reminder-section');
+  const list = $('reminder-list');
+  if (!section || !list) return;
+  const reminders = getUpcomingReminders(record);
+  section.hidden = reminders.length === 0;
+  $('reminder-count').textContent = String(reminders.length);
+  list.replaceChildren(...reminders.map(reminder => {
+    const item = document.createElement('li');
+    item.className = 'reminder-item';
+    item.dataset.tone = reminder.daysRemaining < 0 ? 'overdue' : reminder.daysRemaining === 0 ? 'today' : 'soon';
+    const content = document.createElement('span');
+    content.className = 'reminder-copy';
+    const label = document.createElement('strong');
+    label.textContent = t(reminder.label);
+    const status = document.createElement('small');
+    status.textContent = reminder.daysRemaining < 0
+      ? t('Overdue by {days} days', { days: Math.abs(reminder.daysRemaining) })
+      : reminder.daysRemaining === 0
+        ? t('Due today')
+        : t('Due in {days} days', { days: reminder.daysRemaining });
+    content.append(label, status);
+    const date = document.createElement('time');
+    date.dateTime = reminder.date.toISOString().slice(0, 10);
+    date.textContent = formatReminderDate(reminder.date, getLanguageLocale());
+    item.append(content, date);
+    return item;
+  }));
 }
 
 function setBusy(busy) {
@@ -259,7 +295,7 @@ async function loadVehicle() {
   try {
     const result = await syncCar(config);
     state.record = result.record;
-    renderCar(state.record);
+    renderVehicle(state.record);
     setPhotoPreview('car-img-preview', 'car-img-placeholder', result.carImageUrl);
     setPhotoPreview('car-license-img', 'license-img-placeholder', result.licenseImageUrl);
     setCarFormEnabled(true);
@@ -298,7 +334,7 @@ async function saveCarDetails(event) {
   const next = { ...state.record, ...readCarForm() };
   try {
     await saveRecord(next, 'Vehicle details saved.');
-    renderCar(next);
+    renderVehicle(next);
     $('car-modal').close();
   } catch {}
 }
@@ -320,7 +356,7 @@ async function addFuelExpense(event) {
   const next = { ...state.record, fuelLimit: String(fuelLimit), fuelSpent: String(fuelSpent) };
   try {
     await saveRecord(next, 'Fuel fill saved.');
-    renderCar(next);
+    renderVehicle(next);
     $('fuel-amount-input').value = '';
     $('fuel-dialog').close();
   } catch {}
@@ -336,7 +372,7 @@ async function saveFuelLimit(event) {
   const next = { ...state.record, fuelLimit: String(fuelLimit) };
   try {
     await saveRecord(next, 'Fuel budget saved.');
-    renderCar(next);
+    renderVehicle(next);
   } catch {}
 }
 
@@ -350,7 +386,7 @@ async function resetFuelUsage() {
   const next = { ...state.record, fuelSpent: '0' };
   try {
     await saveRecord(next, 'Fuel usage reset.');
-    renderCar(next);
+    renderVehicle(next);
   } catch {}
 }
 
@@ -393,7 +429,7 @@ async function importLegacyFile(file) {
       next.licenseImageFileId = (await uploadCarImage(blob)).fileId;
     }
     await saveRecord(next, 'Vehicle data imported.');
-    renderCar(next);
+    renderVehicle(next);
     const [carPhoto, licensePhoto] = await Promise.allSettled([
       next.carImageFileId ? import('./car-drive.js?v=2').then(({ loadCarImage }) => loadCarImage(next.carImageFileId)) : '',
       next.licenseImageFileId ? import('./car-drive.js?v=2').then(({ loadCarImage }) => loadCarImage(next.licenseImageFileId)) : ''
@@ -619,7 +655,7 @@ function bindEvents() {
     applyLanguage(event.target.value);
     serviceCurrency = new Intl.NumberFormat(getLanguageLocale(), { style: 'currency', currency: 'THB', minimumFractionDigits: 2, maximumFractionDigits: 2 });
     setToday();
-    if (state.record) renderCar(state.record);
+    if (state.record) renderVehicle(state.record);
     renderServiceHistory();
     renderWeather(weatherLocation);
     if (!$('panel-fuel-prices').hidden) loadFuelPrices();
@@ -649,7 +685,7 @@ function bindEvents() {
 
 
   $('edit-car-button').addEventListener('click', () => {
-    renderCar(state.record);
+    renderVehicle(state.record);
     $('car-modal').showModal();
   });
   $('car-form').addEventListener('submit', saveCarDetails);
@@ -688,6 +724,12 @@ async function initialize() {
   setToday();
   setupInstallApp();
   bindEvents();
+  window.setInterval(() => {
+    if (state.record && document.visibilityState === 'visible') renderReminders(state.record);
+  }, 15 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => {
+    if (state.record && document.visibilityState === 'visible') renderReminders(state.record);
+  });
   renderServiceHistory();
   initializeWeather();
   setCarFormEnabled(false);
