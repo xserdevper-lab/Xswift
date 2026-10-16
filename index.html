@@ -9,9 +9,9 @@
   <link rel="manifest" href="./manifest.webmanifest?v=2">
   <link rel="icon" type="image/svg+xml" href="./icons/xswift-icon.svg?v=2">
   <link rel="apple-touch-icon" href="./icons/xswift-icon.svg?v=2">
-  <link rel="stylesheet" href="./src/styles.css?v=28">
+  <link rel="stylesheet" href="./src/styles.css?v=29">
   <script src="./config.js?v=6"></script>
-  <script type="module" src="./src/main.js?v=34"></script>
+  <script type="module" src="./src/main.js?v=35"></script>
 
 </head>
 <body>
@@ -109,6 +109,19 @@
       </section>
 
       <section id="panel-details" class="tab-panel" data-tab-panel="details" role="tabpanel" aria-labelledby="tab-details" tabindex="0" hidden>
+      <section class="data-section installment-section" aria-labelledby="installment-title">
+        <div class="section-heading">
+          <h3 id="installment-title">Installment progress</h3>
+          <strong id="installment-progress-percent" class="installment-percent">0%</strong>
+        </div>
+        <div class="installment-card">
+          <div class="installment-card-heading">
+            <strong id="installment-paid-count">0 of 72 installments paid</strong>
+            <span id="installment-remaining-count">72 remaining</span>
+          </div>
+          <div id="installment-progress" class="installment-progress" role="progressbar" aria-label="Installment progress" aria-valuemin="0" aria-valuemax="72" aria-valuenow="0"><span id="installment-progress-fill"></span></div>
+        </div>
+      </section>
       <section class="data-section" aria-labelledby="document-title">
         <div class="section-heading">
           <h3 id="document-title">Details & documents</h3>
@@ -256,6 +269,7 @@
       <label class="form-field">Model<input id="ce-model" name="model" autocomplete="off" placeholder="e.g. Toyota Yaris"></label>
       <label class="form-field">License plate<input id="ce-plate" name="plate" autocomplete="off" placeholder="ABC 1234"></label>
       <label class="form-field">Vehicle price (THB)<input id="ce-price" name="price" type="number" min="0" inputmode="numeric"></label>
+      <label class="form-field">Installments paid (of 72)<input id="ce-installments-paid" name="installmentsPaid" type="number" min="0" max="72" step="1" inputmode="numeric" value="0"></label>
       <div class="form-row">
         <label class="form-field">Tax renewal date<input id="ce-tax-renew" name="taxRenew" type="date"></label>
         <label class="form-field">Tax expiration date<input id="ce-tax-expire" name="taxExpire" type="date"></label>

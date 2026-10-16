@@ -13,7 +13,7 @@ This backend lets the public GitHub Pages app read one vehicle record and its tw
 ## What the backend permits
 
 - `login` checks the PIN and issues a signed session token that expires after 12 hours.
-- `getCar` and `saveCar` read or update only the known fields in the `รถยนต์` key/value tab.
+- `getCar` and `saveCar` read or update only the known fields in the `รถยนต์` key/value tab, including the paid installment count (`installmentsPaid`, 0–72).
 - `getServiceHistory` and `saveServiceHistory` read or replace up to 500 service receipts in a separate `ประวัติบำรุงรักษา` tab. Each receipt stores its date, itemized descriptions/quantities/unit prices, and calculated total in the existing `id | date | description | amount | createdAt` columns. Older single-item rows remain readable.
 - `uploadImage` accepts JPEG, PNG, or WebP data up to 1.1 MB and stores the file in the owner's Drive.
 - `getImage` returns only an image ID currently referenced by the vehicle record.

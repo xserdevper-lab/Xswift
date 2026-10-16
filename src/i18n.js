@@ -63,6 +63,16 @@ Object.assign(messages.ja, {
   'Reminders':'リマインダー','Open reminders':'リマインダーを表示','Due in {days} days':'期限まであと{days}日','Due today':'本日期限','Overdue by {days} days':'期限超過から{days}日','Open reminders ({count})':'リマインダーを{count}件表示','No current reminders.':'現在のお知らせはありません'
 });
 
+Object.assign(messages.th, {
+  'Installment progress':'ความคืบหน้าการผ่อนชำระ','Installments paid (of 72)':'จำนวนงวดที่ชำระแล้ว (จาก 72 งวด)','{paid} of {total} installments paid':'ชำระแล้ว {paid} จาก {total} งวด','{count} remaining':'เหลืออีก {count} งวด'
+});
+Object.assign(messages.ko, {
+  'Installment progress':'할부 진행률','Installments paid (of 72)':'납부한 할부 회차 (총 72회)','{paid} of {total} installments paid':'총 {total}회 중 {paid}회 납부','{count} remaining':'{count}회 남음'
+});
+Object.assign(messages.ja, {
+  'Installment progress':'分割払いの進捗','Installments paid (of 72)':'支払済み回数（全72回）','{paid} of {total} installments paid':'全{total}回中{paid}回支払済み','{count} remaining':'残り{count}回'
+});
+
 let currentLanguage = languages.includes(localStorage.getItem(STORAGE_KEY)) ? localStorage.getItem(STORAGE_KEY) : 'en';
 const sourceText = new WeakMap();
 const sourceAttribute = new WeakMap();

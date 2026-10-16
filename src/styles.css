@@ -199,6 +199,14 @@ h1, h2, h3, p { margin: 0; }
 .fuel-summary-dark strong { font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; }
 
 .data-section { margin-top: 25px; scroll-margin-top: 84px; }
+.installment-section { margin-top: 14px; }
+.installment-percent { color: var(--ink); font-size: 15px; font-variant-numeric: tabular-nums; }
+.installment-card { padding: 14px; border: 1px solid var(--line); border-radius: 17px; background: var(--ground); }
+.installment-card-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.installment-card-heading strong { font-size: 12px; font-weight: 600; }
+.installment-card-heading span { color: var(--muted); font-size: 10px; white-space: nowrap; }
+.installment-progress { height: 7px; overflow: hidden; border-radius: 99px; background: #dedee1; }
+.installment-progress > span { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--ink); transition: width .2s ease; }
 .fuel-reset-section { padding-top: 4px; }
 .fuel-reset-description { margin: -3px 0 11px; color: var(--muted); font-size: 11px; line-height: 1.5; }
 .fuel-reset-button { border-color: #e6c9cc; color: var(--danger); }

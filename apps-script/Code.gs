@@ -12,7 +12,7 @@ const XSWIFT_ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
 const XSWIFT_FIELDS = [
   'model', 'plate', 'price', 'taxRenew', 'taxExpire', 'insType', 'insYear',
   'insExpire', 'licenseExpire', 'batteryDate', 'maintenanceDate',
-  'maintenanceIntervalMonths', 'memo', 'carImageFileId', 'licenseImageFileId',
+  'maintenanceIntervalMonths', 'installmentsPaid', 'memo', 'carImageFileId', 'licenseImageFileId',
   'fuelLimit', 'fuelSpent'
 ];
 const XSWIFT_IMAGE_FIELDS = ['carImageFileId', 'licenseImageFileId'];

@@ -1,11 +1,13 @@
-import { getLanguageLocale, t } from './i18n.js?v=1';
+import { getLanguageLocale, t } from './i18n.js?v=2';
 
 const FORM_FIELDS = {
   model: 'ce-model', plate: 'ce-plate', price: 'ce-price', taxRenew: 'ce-tax-renew',
   taxExpire: 'ce-tax-expire', insType: 'ce-ins-type', insYear: 'ce-ins-year',
   insExpire: 'ce-ins-expire', licenseExpire: 'ce-license-expire', batteryDate: 'ce-battery-date',
-  maintenanceDate: 'ce-maintenance-date', maintenanceIntervalMonths: 'ce-maintenance-interval'
+  maintenanceDate: 'ce-maintenance-date', maintenanceIntervalMonths: 'ce-maintenance-interval',
+  installmentsPaid: 'ce-installments-paid'
 };
+const TOTAL_INSTALLMENTS = 72;
 
 const INSURANCE_TYPES = new Map([
   ['ชั้น 1', 'Class 1'], ['ชั้น 2', 'Class 2'], ['ชั้น 2+', 'Class 2+'],
@@ -76,6 +78,18 @@ export function renderCar(record = {}) {
   put('car-plate-text', record.plate || t('License plate'));
   const price = Number(record.price || 0);
   put('car-price-val', `฿${price.toLocaleString('en-US')}`);
+  const rawInstallmentsPaid = Number(record.installmentsPaid);
+  const installmentsPaid = Number.isFinite(rawInstallmentsPaid)
+    ? Math.max(0, Math.min(TOTAL_INSTALLMENTS, Math.floor(rawInstallmentsPaid)))
+    : 0;
+  const installmentPercent = Math.round((installmentsPaid / TOTAL_INSTALLMENTS) * 100);
+  put('installment-progress-percent', `${installmentPercent}%`);
+  put('installment-paid-count', t('{paid} of {total} installments paid', { paid: installmentsPaid, total: TOTAL_INSTALLMENTS }));
+  put('installment-remaining-count', t('{count} remaining', { count: TOTAL_INSTALLMENTS - installmentsPaid }));
+  const installmentProgress = document.getElementById('installment-progress');
+  const installmentProgressFill = document.getElementById('installment-progress-fill');
+  if (installmentProgress) installmentProgress.setAttribute('aria-valuenow', String(installmentsPaid));
+  if (installmentProgressFill) installmentProgressFill.style.width = `${installmentPercent}%`;
   const fuelLimit = Math.max(1, Number(record.fuelLimit) || 5000);
   const fuelSpent = Math.max(0, Number(record.fuelSpent) || 0);
   const fuelUsedPercent = Math.round((fuelSpent / fuelLimit) * 100);
@@ -144,6 +158,7 @@ export function renderCar(record = {}) {
       ? (INSURANCE_TYPES.get(record[field]) || record[field] || '')
       : field === 'maintenanceDate' ? String(record[field] || '').slice(0,7)
       : field === 'maintenanceIntervalMonths' ? String(record[field] || 6)
+      : field === 'installmentsPaid' ? String(installmentsPaid)
       : record[field] ?? '';
   }
 }
@@ -196,7 +211,7 @@ export function setCarFormEnabled(enabled) {
     const control = document.getElementById(id);
     if (control) control.disabled = !enabled;
   }
-  for (const id of ['fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button', 'reset-fuel-usage-button', 'ce-maintenance-date', 'ce-maintenance-interval']) {
+  for (const id of ['fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button', 'reset-fuel-usage-button', 'ce-maintenance-date', 'ce-maintenance-interval', 'ce-installments-paid']) {
     const control = document.getElementById(id);
     if (control) control.disabled = !enabled;
   }
