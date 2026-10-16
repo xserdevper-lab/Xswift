@@ -1,3 +1,5 @@
+import { getLanguageLocale, t } from './i18n.js?v=1';
+
 const FORM_FIELDS = {
   model: 'ce-model', plate: 'ce-plate', price: 'ce-price', taxRenew: 'ce-tax-renew',
   taxExpire: 'ce-tax-expire', insType: 'ce-ins-type', insYear: 'ce-ins-year',
@@ -14,11 +16,11 @@ function formatDate(value) {
   if (!value) return '—';
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
+  return new Intl.DateTimeFormat(getLanguageLocale(), { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
 }
 
 function formatMaintenanceMonth(date) {
-  return new Intl.DateTimeFormat('th-TH', {month:'long',year:'numeric'}).format(date);
+  return new Intl.DateTimeFormat(getLanguageLocale(), {month:'long',year:'numeric'}).format(date);
 }
 
 function dateValue(date) {
@@ -44,17 +46,17 @@ function wholeMonthsBetween(start, end) {
 }
 
 function documentStatus(value) {
-  if (!value) return { text: 'Not set', tone: '' };
+  if (!value) return { text: t('Not set'), tone: '' };
   const expiry = new Date(`${value}T00:00:00`);
   if (Number.isNaN(expiry.getTime())) return { text: '—', tone: '' };
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const days = Math.ceil((expiry - today) / 86400000);
-  if (days < 0) return { text: `Expired ${Math.abs(days)} days ago`, tone: 'bad' };
-  if (days === 0) return { text: 'Expires today', tone: 'warn' };
-  if (days === 1) return { text: '1 day left', tone: 'warn' };
-  if (days <= 30) return { text: `${days} days left`, tone: 'warn' };
-  return { text: `${days} days left`, tone: 'good' };
+  if (days < 0) return { text: t('Expired {days} days ago', { days: Math.abs(days) }), tone: 'bad' };
+  if (days === 0) return { text: t('Expires today'), tone: 'warn' };
+  if (days === 1) return { text: t('1 day left'), tone: 'warn' };
+  if (days <= 30) return { text: t('{days} days left', { days }), tone: 'warn' };
+  return { text: t('{days} days left', { days }), tone: 'good' };
 }
 
 function put(id, value) {
@@ -70,8 +72,8 @@ function putStatus(id, date) {
 }
 
 export function renderCar(record = {}) {
-  put('car-model-text', record.model || 'Vehicle not set up');
-  put('car-plate-text', record.plate || 'License plate');
+  put('car-model-text', record.model || t('Vehicle not set up'));
+  put('car-plate-text', record.plate || t('License plate'));
   const price = Number(record.price || 0);
   put('car-price-val', `฿${price.toLocaleString('en-US')}`);
   const fuelLimit = Math.max(1, Number(record.fuelLimit) || 5000);
@@ -82,7 +84,7 @@ export function renderCar(record = {}) {
   put('fuel-limit-display', fuelLimit.toLocaleString('en-US'));
   put('fuel-limit-scale', formatBaht(fuelLimit));
   put('fuel-progress-center', formatBaht(fuelSpent));
-  put('fuel-spent-display', `${formatBaht(fuelSpent)} spent`);
+  put('fuel-spent-display', `${formatBaht(fuelSpent)} ${t('spent')}`);
   put('fuel-used-percent', `${fuelUsedPercent}%`);
   const fuelProgressFill = document.getElementById('fuel-progress-fill');
   if (fuelProgressFill) fuelProgressFill.style.width = `${fuelProgressPercent}%`;
@@ -93,8 +95,8 @@ export function renderCar(record = {}) {
   const maintenanceDate = record.maintenanceDate ? new Date(`${record.maintenanceDate.slice(0,7)}-01T00:00:00`) : null;
   const maintenanceIntervalMonths = Math.floor(Number(record.maintenanceIntervalMonths || 6));
   const hasMaintenanceSchedule = maintenanceDate && !Number.isNaN(maintenanceDate.getTime()) && maintenanceIntervalMonths > 0;
-  put('maintenance-last-date', `Last service: ${hasMaintenanceSchedule ? formatMaintenanceMonth(maintenanceDate) : '—'}`);
-  put('maintenance-interval', `Every ${hasMaintenanceSchedule ? maintenanceIntervalMonths : '—'} months`);
+  put('maintenance-last-date', `${t('Last service:')} ${hasMaintenanceSchedule ? formatMaintenanceMonth(maintenanceDate) : '—'}`);
+  put('maintenance-interval', `${t('Every')} ${hasMaintenanceSchedule ? maintenanceIntervalMonths : '—'} ${t('months')}`);
   if (hasMaintenanceSchedule) {
     const nextMaintenanceDate = addMonths(maintenanceDate, maintenanceIntervalMonths);
     const today = new Date();
@@ -106,25 +108,25 @@ export function renderCar(record = {}) {
     let maintenanceStatus;
     if (daysRemaining < 0) {
       const overdueMonths = Math.abs(monthDifference);
-      maintenanceStatus = overdueMonths ? `Overdue by ${overdueMonths} ${overdueMonths === 1 ? 'month' : 'months'}` : 'Overdue this month';
+      maintenanceStatus = overdueMonths ? t('Overdue by {count} {unit}', { count: overdueMonths, unit: t(overdueMonths === 1 ? 'month' : 'months') }) : t('Overdue this month');
     } else if (remainingMonths > 0) {
-      maintenanceStatus = `${remainingMonths} ${remainingMonths === 1 ? 'month' : 'months'} left`;
+      maintenanceStatus = t('{count} {unit} left', { count: remainingMonths, unit: t(remainingMonths === 1 ? 'month' : 'months') });
     } else if (nextMaintenanceDate.getFullYear() === today.getFullYear() && nextMaintenanceDate.getMonth() === today.getMonth()) {
-      maintenanceStatus = 'Due this month';
+      maintenanceStatus = t('Due this month');
     } else {
-      maintenanceStatus = 'Due in less than 1 month';
+      maintenanceStatus = t('Due in less than 1 month');
     }
     put('maintenance-status', maintenanceStatus);
-    put('maintenance-next-date', `Next service: ${formatMaintenanceMonth(nextMaintenanceDate)}`);
+    put('maintenance-next-date', `${t('Next service:')} ${formatMaintenanceMonth(nextMaintenanceDate)}`);
     if (maintenanceProgressFill) maintenanceProgressFill.style.width = `${elapsed}%`;
     if (maintenanceProgress) maintenanceProgress.setAttribute('aria-valuenow', String(Math.round(elapsed)));
   } else {
-    put('maintenance-status', 'Not set');
-    put('maintenance-next-date', 'Set in Edit details');
+    put('maintenance-status', t('Not set'));
+    put('maintenance-next-date', t('Set in Edit details'));
     if (maintenanceProgressFill) maintenanceProgressFill.style.width = '0%';
     if (maintenanceProgress) maintenanceProgress.setAttribute('aria-valuenow', '0');
   }
-  put('car-tax-renew', `Renewal: ${formatDate(record.taxRenew)}`);
+  put('car-tax-renew', `${t('Renewal:')} ${formatDate(record.taxRenew)}`);
   put('car-tax-expire', formatDate(record.taxExpire));
   const insuranceType = INSURANCE_TYPES.get(record.insType) || record.insType;
   put('car-ins-type', insuranceType ? `${insuranceType}${record.insYear ? ` · ${record.insYear}` : ''}` : '—');
@@ -173,7 +175,7 @@ export function setSyncState(state, message) {
   const status = document.getElementById('sync-status');
   if (status) {
     status.dataset.state = state;
-    status.textContent = message;
+    status.textContent = t(message);
   }
   const content = document.getElementById('car-content');
   if (state === 'connected') content.dataset.connected = 'true';
@@ -185,7 +187,7 @@ export function setSyncState(state, message) {
   const signOutButton = document.getElementById('sign-out-button');
   if (signOutButton) signOutButton.hidden = !connected;
   const accountStatus = document.getElementById('settings-account-status');
-  if (accountStatus) accountStatus.textContent = connected ? 'Session active in this tab' : 'No active session';
+  if (accountStatus) accountStatus.textContent = t(connected ? 'Session active in this tab' : 'No active session');
 }
 
 export function setCarFormEnabled(enabled) {
@@ -199,5 +201,3 @@ export function setCarFormEnabled(enabled) {
     if (control) control.disabled = !enabled;
   }
 }
-
-

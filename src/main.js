@@ -2,10 +2,11 @@
 import { loginWithPin, getCar as getRemoteCar, saveCar as saveRemoteCar, getServiceHistory as getRemoteServiceHistory, saveServiceHistory as saveRemoteServiceHistory, clearSession } from './xswift-api.js?v=4';
 import { uploadCarImage } from './car-drive.js?v=2';
 import { syncCar, saveSyncedCar } from './car-sync.js?v=2';
-import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=5';
+import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=6';
 import { parseLegacyCar } from './legacy-import.js';
 import { loadServiceHistory as loadLocalServiceHistory, saveServiceHistory as saveLocalServiceHistory, createServiceRecord } from './service-history.js';
 import { loadWeatherLocation, saveWeatherLocation, getCurrentLocation, fetchCurrentWeather, describeWeather, isRainCode, weatherIconSvg } from './weather.js?v=1';
+import { applyLanguage, getLanguageLocale, t } from './i18n.js?v=1';
 
 const config = window.XSWIFT_CONFIG || {};
 const state = { record: null, toastTimer: 0, installPrompt: null };
@@ -15,6 +16,7 @@ let weatherBusy = false;
 let weatherRefreshTimer = 0;
 let lastWeatherRefresh = 0;
 const $ = id => document.getElementById(id);
+applyLanguage();
 const fuelPriceFeed = './fuel-prices.json';
 const fuelTypes = [
   ['Gasohol 95', 'gh95'],
@@ -31,7 +33,7 @@ const fuelTypes = [
 
 function toast(message) {
   const element = $('toast');
-  element.textContent = message;
+  element.textContent = t(message);
   element.classList.add('show');
   window.clearTimeout(state.toastTimer);
   state.toastTimer = window.setTimeout(() => element.classList.remove('show'), 2800);
@@ -53,13 +55,13 @@ function setBusy(busy) {
 }
 function requireConfig() { return true; }
 
-const serviceCurrency = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+let serviceCurrency = new Intl.NumberFormat(getLanguageLocale(), { style: 'currency', currency: 'THB', minimumFractionDigits: 2, maximumFractionDigits: 2 });
 function renderServiceHistory() {
   const list = $('service-history-list');
   if (!list) return;
   list.replaceChildren();
   const total = serviceHistory.reduce((sum, record) => sum + record.amount, 0);
-  $('service-history-count').textContent = `${serviceHistory.length} ${serviceHistory.length === 1 ? 'receipt' : 'receipts'}`;
+  $('service-history-count').textContent = `${serviceHistory.length} ${t(serviceHistory.length === 1 ? 'receipt' : 'receipts')}`;
   $('service-history-total').textContent = serviceCurrency.format(total);
   $('service-history-empty').hidden = serviceHistory.length > 0;
   list.hidden = serviceHistory.length === 0;
@@ -67,9 +69,9 @@ function renderServiceHistory() {
     const item = document.createElement('li'); item.className = 'service-history-item';
     const receipt = document.createElement('details'); receipt.className = 'service-history-receipt';
     const summary = document.createElement('summary');
-    const heading = document.createElement('span'); heading.className = 'service-history-receipt-heading'; heading.textContent = 'Service receipt';
+    const heading = document.createElement('span'); heading.className = 'service-history-receipt-heading'; heading.textContent = t('Service receipt');
     const date = document.createElement('time'); date.dateTime = record.date;
-    date.textContent = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${record.date}T00:00:00Z`));
+    date.textContent = new Intl.DateTimeFormat(getLanguageLocale(), { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${record.date}T00:00:00Z`));
     const summaryDate = document.createElement('span'); summaryDate.className = 'service-history-receipt-date'; summaryDate.append(heading, date);
     const amount = document.createElement('strong'); amount.className = 'service-history-amount'; amount.textContent = serviceCurrency.format(record.amount);
     const chevron = document.createElement('span'); chevron.className = 'service-history-chevron'; chevron.setAttribute('aria-hidden', 'true');
@@ -85,11 +87,11 @@ function renderServiceHistory() {
       line.append(description, quantity, lineTotal); lines.append(line);
     }
     const total = document.createElement('div'); total.className = 'service-history-receipt-total';
-    const totalLabel = document.createElement('span'); totalLabel.textContent = 'Total';
+    const totalLabel = document.createElement('span'); totalLabel.textContent = t('Total');
     const receiptTotal = document.createElement('strong'); receiptTotal.className = 'service-history-amount'; receiptTotal.textContent = serviceCurrency.format(record.amount);
     total.append(totalLabel, receiptTotal);
-    const remove = document.createElement('button'); remove.className = 'service-history-delete'; remove.type = 'button'; remove.textContent = 'Delete';
-    remove.setAttribute('aria-label', `Delete service receipt from ${date.textContent}`); remove.addEventListener('click', () => deleteServiceRecord(record.id));
+    const remove = document.createElement('button'); remove.className = 'service-history-delete'; remove.type = 'button'; remove.textContent = t('Delete');
+    remove.setAttribute('aria-label', `${t('Delete service receipt from')} ${date.textContent}`); remove.addEventListener('click', () => deleteServiceRecord(record.id));
     details.append(lines, total, remove); receipt.append(summary, details); item.append(receipt); list.append(item);
   }
 }
@@ -98,39 +100,39 @@ function renderWeather(snapshot = weatherLocation) {
   const current = snapshot?.weather;
   if (!current) {
     $('weather-temperature').textContent = '—°';
-    $('weather-condition').textContent = 'Use your location for a local update';
-    $('weather-feels-like').textContent = 'Feels like —°';
-    $('weather-wind').textContent = 'Wind — km/h';
+    $('weather-condition').textContent = t('Use your location for a local update');
+    $('weather-feels-like').textContent = t('Feels like —°');
+    $('weather-wind').textContent = t('Wind — km/h');
     $('weather-icon').innerHTML = weatherIconSvg('cloud');
-    $('weather-updated').textContent = 'Location not enabled';
+    $('weather-updated').textContent = t('Location not enabled');
     $('weather-refresh-button').hidden = true;
-    $('weather-location-button').textContent = 'Use current location';
+    $('weather-location-button').textContent = t('Use current location');
     $('weather-safety-alert').hidden = true;
     return;
   }
 
   const condition = describeWeather(current.weatherCode, current.isDay);
   $('weather-icon').innerHTML = weatherIconSvg(condition.icon);
-  $('weather-icon').setAttribute('aria-label', condition.label);
+  $('weather-icon').setAttribute('aria-label', t(condition.label));
   $('weather-temperature').textContent = `${Math.round(current.temperature)}°`;
-  $('weather-condition').textContent = condition.label;
-  $('weather-feels-like').textContent = `Feels like ${Math.round(current.apparentTemperature ?? current.temperature)}°`;
-  $('weather-wind').textContent = `Wind ${Math.round(current.windSpeed)} km/h`;
+  $('weather-condition').textContent = t(condition.label);
+  $('weather-feels-like').textContent = t('Feels like {value}°', { value: Math.round(current.apparentTemperature ?? current.temperature) });
+  $('weather-wind').textContent = t('Wind {value} km/h', { value: Math.round(current.windSpeed) });
   const updatedAt = new Date(snapshot.fetchedAt || Date.now());
-  const updatedTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(updatedAt);
-  $('weather-updated').textContent = `Updated ${updatedTime}`;
+  const updatedTime = new Intl.DateTimeFormat(getLanguageLocale(), { hour: '2-digit', minute: '2-digit' }).format(updatedAt);
+  $('weather-updated').textContent = `${t('Updated')} ${updatedTime}`;
   $('weather-refresh-button').hidden = false;
-  $('weather-location-button').textContent = 'Update location';
+  $('weather-location-button').textContent = t('Update location');
 
   let warning = '';
   if (Number(current.weatherCode) >= 95) {
-    warning = 'Thunderstorm nearby. Slow down, keep extra distance, and avoid exposed roads.';
+    warning = t('Thunderstorm nearby. Slow down, keep extra distance, and avoid exposed roads.');
   } else if (isRainCode(current.weatherCode) || current.precipitation > 0.1 || current.rain > 0.1 || current.showers > 0.1) {
-    warning = 'Rain is falling. Roads may be slippery—slow down, leave extra distance, and avoid sudden braking.';
+    warning = t('Rain is falling. Roads may be slippery—slow down, leave extra distance, and avoid sudden braking.');
   } else if (current.rainExpected || Number(current.rainChanceNextHours) >= 60) {
     warning = `Rain is likely in the next few hours${Number.isFinite(current.rainChanceNextHours) ? ` (${Math.round(current.rainChanceNextHours)}%)` : ''}. Drive carefully and leave extra distance.`;
   } else if (current.windGusts >= 60) {
-    warning = 'Strong wind gusts are possible. Keep both hands on the wheel and take extra care.';
+    warning = t('Strong wind gusts are possible. Keep both hands on the wheel and take extra care.');
   }
   $('weather-safety-message').textContent = warning;
   $('weather-safety-alert').hidden = !warning;
@@ -141,15 +143,15 @@ function setWeatherBusy(busy) {
   $('weather-location-button').disabled = busy;
   $('weather-refresh-button').disabled = busy;
   $('weather-location-button').textContent = busy
-    ? 'Updating…'
-    : (weatherLocation ? 'Update location' : 'Use current location');
+    ? t('Updating…')
+    : t(weatherLocation ? 'Update location' : 'Use current location');
 }
 
 async function fetchWeatherFor(location, updateDeviceLocation = false) {
   if (weatherBusy) return;
   const previous = weatherLocation;
   setWeatherBusy(true);
-  $('weather-updated').textContent = updateDeviceLocation ? 'Finding your location…' : 'Updating weather…';
+  $('weather-updated').textContent = t(updateDeviceLocation ? 'Finding your location…' : 'Updating weather…');
   try {
     let coords = location || previous;
     if (updateDeviceLocation) {
@@ -162,7 +164,7 @@ async function fetchWeatherFor(location, updateDeviceLocation = false) {
     }
     if (!coords || !Number.isFinite(coords.latitude) || !Number.isFinite(coords.longitude)) {
       renderWeather(null);
-      $('weather-condition').textContent = 'Use your location to see local weather';
+      $('weather-condition').textContent = t('Use your location to see local weather');
       return;
     }
     coords = { latitude: Math.round(coords.latitude * 100) / 100, longitude: Math.round(coords.longitude * 100) / 100 };
@@ -174,11 +176,11 @@ async function fetchWeatherFor(location, updateDeviceLocation = false) {
     if (previous?.weather) {
       weatherLocation = previous;
       renderWeather(previous);
-      $('weather-updated').textContent = `Showing last update · ${error.message}`;
+      $('weather-updated').textContent = `${t('Showing last update')} · ${t(error.message)}`;
     } else {
       renderWeather(null);
-      $('weather-condition').textContent = error.message;
-      $('weather-updated').textContent = 'Weather unavailable';
+      $('weather-condition').textContent = t(error.message);
+      $('weather-updated').textContent = t('Weather unavailable');
     }
   } finally { setWeatherBusy(false); }
 }
@@ -213,14 +215,14 @@ async function saveServiceRecord(event) {
       unitPrice: Number(row.querySelector('.service-item-price').value)
     }));
     const record = createServiceRecord({ date: $('service-date-input').value, items });
-    serviceHistory = saveLocalServiceHistory([record, ...serviceHistory]); renderServiceHistory(); form.reset(); $('service-receipt-items').replaceChildren(); $('service-dialog').close(); toast('Service receipt saved on this device.');
+    serviceHistory = saveLocalServiceHistory([record, ...serviceHistory]); renderServiceHistory(); form.reset(); $('service-receipt-items').replaceChildren(); $('service-dialog').close(); toast(t('Service receipt saved on this device.'));
   } catch (error) { toast(error.message); }
 }
 
 function deleteServiceRecord(id) {
   const record = serviceHistory.find(item => item.id === id);
-  if (!record || !window.confirm('Delete this service receipt?')) return;
-  try { serviceHistory = saveLocalServiceHistory(serviceHistory.filter(item => item.id !== id)); renderServiceHistory(); toast('Service receipt deleted from this device.'); }
+  if (!record || !window.confirm(t('Delete this service receipt?'))) return;
+  try { serviceHistory = saveLocalServiceHistory(serviceHistory.filter(item => item.id !== id)); renderServiceHistory(); toast(t('Service receipt deleted from this device.')); }
   catch (error) { toast(error.message); }
 }
 
@@ -262,10 +264,10 @@ async function loadVehicle() {
     setPhotoPreview('car-license-img', 'license-img-placeholder', result.licenseImageUrl);
     setCarFormEnabled(true);
     setSyncState('connected', 'Connected');
-    if (result.imageErrors) toast('Vehicle data loaded, but some photos could not be loaded.');
+    if (result.imageErrors) toast(t('Vehicle data loaded, but some photos could not be loaded.'));
   } catch (error) {
     setSyncState('error', 'Local storage error');
-    $('connection-message').textContent = error.message;
+    $('connection-message').textContent = t(error.message);
     toast(error.message);
     throw error;
   } finally {
@@ -283,8 +285,8 @@ async function saveRecord(record, successMessage = 'Saved.') {
     toast(successMessage);
   } catch (error) {
     setSyncState('error', 'Save failed');
-    $('connection-message').textContent = `${error.message} Your changes are still here. Please try again.`;
-    toast(`Save failed: ${error.message}`);
+    $('connection-message').textContent = `${t(error.message)} ${t('Your changes are still here. Please try again.')}`;
+    toast(`${t('Save failed')}: ${error.message}`);
     throw error;
   } finally {
     setBusy(false);
@@ -310,7 +312,7 @@ async function addFuelExpense(event) {
   event.preventDefault();
   const amount = Number($('fuel-amount-input').value);
   if (!Number.isFinite(amount) || amount <= 0) {
-    toast('Enter a fuel amount greater than zero.');
+    toast(t('Enter a fuel amount greater than zero.'));
     return;
   }
   const fuelLimit = Math.max(1, Number(state.record.fuelLimit) || 5000);
@@ -328,7 +330,7 @@ async function saveFuelLimit(event) {
   event.preventDefault();
   const fuelLimit = Number($('fuel-limit-input').value);
   if (!Number.isFinite(fuelLimit) || fuelLimit <= 0) {
-    toast('Enter a fuel budget limit greater than zero.');
+    toast(t('Enter a fuel budget limit greater than zero.'));
     return;
   }
   const next = { ...state.record, fuelLimit: String(fuelLimit) };
@@ -344,7 +346,7 @@ async function resetFuelUsage() {
     toast('Fuel usage is already zero.');
     return;
   }
-  if (!window.confirm('Reset fuel usage to ฿0? Your fuel budget limit and other vehicle data will stay unchanged.')) return;
+  if (!window.confirm(t('Reset fuel usage to ฿0? Your fuel budget limit and other vehicle data will stay unchanged.'))) return;
   const next = { ...state.record, fuelSpent: '0' };
   try {
     await saveRecord(next, 'Fuel usage reset.');
@@ -367,8 +369,8 @@ async function replacePhoto(file, key, imageId, placeholderId) {
     toast('Photo updated.');
   } catch (error) {
     setSyncState('error', 'Upload failed');
-    $('connection-message').textContent = `${error.message} Your previous photo is still available. Please try again.`;
-    toast(`Photo upload failed: ${error.message}`);
+    $('connection-message').textContent = `${t(error.message)} ${t('Your previous photo is still available. Please try again.')}`;
+    toast(`${t('Photo upload failed')}: ${error.message}`);
   } finally {
     setBusy(false);
   }
@@ -379,8 +381,8 @@ async function importLegacyFile(file) {
   try {
     const imported = parseLegacyCar(await file.text());
     const hasCarData = Object.values(imported.record).some(value => value.trim()) || imported.carImage || imported.licenseImage;
-    if (!hasCarData) throw new Error('This file does not contain vehicle data.');
-    if (!window.confirm('Import this vehicle data and replace the current Xswift vehicle record?')) return;
+  if (!hasCarData) throw new Error('This file does not contain vehicle data.');
+    if (!window.confirm(t('Import this vehicle data and replace the current Xswift vehicle record?'))) return;
     const next = { ...state.record, ...imported.record };
     if (imported.carImage) {
       const blob = await (await fetch(imported.carImage)).blob();
@@ -400,7 +402,7 @@ async function importLegacyFile(file) {
     setPhotoPreview('car-license-img', 'license-img-placeholder', licensePhoto.status === 'fulfilled' ? licensePhoto.value : '');
     if (carPhoto.status === 'rejected' || licensePhoto.status === 'rejected') toast('Data imported, but some photos could not be loaded.');
   } catch (error) {
-    toast(`Import failed: ${error.message}`);
+    toast(`${t('Import failed')}: ${error.message}`);
   } finally {
     $('legacy-file-input').value = '';
   }
@@ -408,7 +410,7 @@ async function importLegacyFile(file) {
 
 function setToday() {
   const date = new Date();
-  $('today-date').textContent = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).format(date);
+  $('today-date').textContent = new Intl.DateTimeFormat(getLanguageLocale(), { weekday: 'long', month: 'short', day: 'numeric' }).format(date);
 }
 
 function activateTab(activeTab, focusTab = false) {
@@ -434,7 +436,7 @@ function formatEffectiveTime(date, time) {
   if (!date) return '—';
   const parsed = new Date(`${date}T${time || '00:00'}:00+07:00`);
   if (Number.isNaN(parsed.getTime())) return date;
-  return new Intl.DateTimeFormat('en-GB', {
+  return new Intl.DateTimeFormat(getLanguageLocale(), {
     day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Bangkok'
   }).format(parsed);
 }
@@ -447,7 +449,7 @@ function renderFuelPrices(payload) {
     const row = document.createElement('tr');
     const type = document.createElement('th');
     type.scope = 'row';
-    type.textContent = label;
+    type.textContent = t(label);
     row.append(type);
     for (const [brand, record] of [['ptt', ptt], ['bcp', bcp], ['caltex', caltex]]) {
       const cell = document.createElement('td');
@@ -459,14 +461,14 @@ function renderFuelPrices(payload) {
     return row;
   });
   $('fuel-price-rows').replaceChildren(...tableRows);
-  $('fuel-prices-updated').textContent = `PTT effective ${formatEffectiveTime(ptt.oil_ptt_date, ptt.oil_ptt_time)} · Bangchak effective ${formatEffectiveTime(bcp.oil_bcp_date, bcp.oil_bcp_time)} · Caltex effective ${formatEffectiveTime(caltex.oil_caltex_date, caltex.oil_caltex_time)}`;
+  $('fuel-prices-updated').textContent = `PTT ${t('effective')} ${formatEffectiveTime(ptt.oil_ptt_date, ptt.oil_ptt_time)} · Bangchak ${t('effective')} ${formatEffectiveTime(bcp.oil_bcp_date, bcp.oil_bcp_time)} · Caltex ${t('effective')} ${formatEffectiveTime(caltex.oil_caltex_date, caltex.oil_caltex_time)}`;
 
   const tomorrow = payload.tomorrow;
   const tomorrowRows = fuelTypes.map(([label, key]) => {
     const row = document.createElement('tr');
     const type = document.createElement('th');
     type.scope = 'row';
-    type.textContent = label;
+    type.textContent = t(label);
     row.append(type);
     for (const brand of ['ptt', 'bcp', 'caltex']) {
       const cell = document.createElement('td');
@@ -479,14 +481,14 @@ function renderFuelPrices(payload) {
   });
   $('fuel-price-tomorrow-rows').replaceChildren(...tomorrowRows);
   $('fuel-prices-tomorrow-date').textContent = tomorrow?.effectiveDate
-    ? `Prices effective ${formatFuelPriceDate(tomorrow.effectiveDate)}`
-    : 'Tomorrow’s price date unavailable';
-  $('fuel-prices-tomorrow-state').textContent = tomorrow?.bcp ? 'Bangchak data available' : 'Bangchak data unavailable';
+    ? `${t('Prices effective')} ${formatFuelPriceDate(tomorrow.effectiveDate)}`
+    : t('Tomorrow’s price date unavailable');
+  $('fuel-prices-tomorrow-state').textContent = t(tomorrow?.bcp ? 'Bangchak data available' : 'Bangchak data unavailable');
 }
 
 function formatFuelPriceDate(date) {
   const parsed = new Date(`${date}T05:00:00+07:00`);
-  return Number.isNaN(parsed.getTime()) ? date : new Intl.DateTimeFormat('en-GB', {
+  return Number.isNaN(parsed.getTime()) ? date : new Intl.DateTimeFormat(getLanguageLocale(), {
     day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Bangkok'
   }).format(parsed);
 }
@@ -495,29 +497,29 @@ async function loadFuelPrices() {
   const button = $('refresh-fuel-prices');
   const status = $('fuel-prices-state');
   button.disabled = true;
-  status.textContent = 'Updating…';
+  status.textContent = t('Updating…');
   try {
     const response = await fetch(fuelPriceFeed, { cache: 'no-store' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
     if (payload.status !== 'success') throw new Error('The price feed is unavailable.');
     renderFuelPrices(payload);
-    status.textContent = payload.last_updated ? `Feed updated ${payload.last_updated}` : 'Prices updated';
+    status.textContent = payload.last_updated ? `${t('Feed updated')} ${payload.last_updated}` : t('Prices updated');
   } catch (error) {
-    $('fuel-prices-updated').textContent = 'Current prices are unavailable.';
+    $('fuel-prices-updated').textContent = t('Current prices are unavailable.');
     const row = document.createElement('tr');
     const message = document.createElement('td');
     message.colSpan = 4;
     message.className = 'fuel-price-placeholder';
-    message.textContent = 'Could not load current prices. Tap Refresh to try again.';
+    message.textContent = t('Could not load current prices. Tap Refresh to try again.');
     row.append(message);
     $('fuel-price-rows').replaceChildren(row);
-    $('fuel-prices-tomorrow-date').textContent = 'Tomorrow’s prices are unavailable.';
-    $('fuel-prices-tomorrow-state').textContent = 'Unable to update';
+    $('fuel-prices-tomorrow-date').textContent = t('Tomorrow’s prices are unavailable.');
+    $('fuel-prices-tomorrow-state').textContent = t('Unable to update');
     const tomorrowRow = row.cloneNode(true);
-    tomorrowRow.firstElementChild.textContent = 'Could not load tomorrow’s prices. Tap Refresh to try again.';
+    tomorrowRow.firstElementChild.textContent = t('Could not load tomorrow’s prices. Tap Refresh to try again.');
     $('fuel-price-tomorrow-rows').replaceChildren(tomorrowRow);
-    status.textContent = 'Unable to update';
+    status.textContent = t('Unable to update');
   } finally {
     button.disabled = false;
   }
@@ -559,7 +561,7 @@ function setupInstallApp() {
 
 
 let sheetConnected = false;
-function sheetStatus(message) { const node = $('sheet-sync-status'); if(node) node.textContent = message; }
+function sheetStatus(message) { const node = $('sheet-sync-status'); if(node) node.textContent = t(message); }
 function sheetControls(busy = false) {
   for (const id of ['sheet-connect','sheet-pull','sheet-push','sheet-disconnect','sheet-sync-button']) {
     const node = $(id); if(node) node.disabled = busy;
@@ -577,11 +579,11 @@ async function connectSheet() {
     $('sheet-pin').value = '';
     $('sheet-pin').hidden = true;
     sheetStatus('Connected. Data transfers only when you choose Download or Upload.');
-  } catch(e) { sheetStatus('Connection failed: ' + e.message); }
+  } catch(e) { sheetStatus(`${t('Connection failed:')} ${t(e.message)}`); }
   finally { sheetControls(false); }
 }
 async function pullSheet() {
-  if (!sheetConnected || !window.confirm('Replace vehicle details and service history on this device with Google Sheets data? Local details and history will be overwritten. Photos are not included.')) return;
+  if (!sheetConnected || !window.confirm(t('Replace vehicle details and service history on this device with Google Sheets data? Local details and history will be overwritten. Photos are not included.'))) return;
   sheetControls(true); sheetStatus('Downloading from Google Sheets…');
   try {
     const [remote, remoteHistory] = await Promise.all([getRemoteCar(), getRemoteServiceHistory()]);
@@ -591,11 +593,11 @@ async function pullSheet() {
     renderServiceHistory();
     await loadVehicle();
     sheetStatus('Vehicle details and service history downloaded to this device.');
-  } catch(e) { sheetStatus('Download failed: ' + e.message); }
+  } catch(e) { sheetStatus(`${t('Download failed:')} ${t(e.message)}`); }
   finally { sheetControls(false); }
 }
 async function pushSheet() {
-  if (!sheetConnected || !state.record || !window.confirm('Overwrite vehicle details and service history in Google Sheets with this device\'s data? Photos will not be uploaded.')) return;
+  if (!sheetConnected || !state.record || !window.confirm(t('Overwrite vehicle details and service history in Google Sheets with this device\'s data? Photos will not be uploaded.'))) return;
   sheetControls(true); sheetStatus('Uploading to Google Sheets…');
   try {
     const remote = await getRemoteCar();
@@ -604,7 +606,7 @@ async function pushSheet() {
     const failed = results.filter(result => result.status === 'rejected');
     if (failed.length) throw new Error(failed.map(result => result.reason?.message || 'One data section failed').join('; '));
     sheetStatus('Vehicle details and service history uploaded to Google Sheets.');
-  } catch(e) { sheetStatus('Upload failed: ' + e.message); }
+  } catch(e) { sheetStatus(`${t('Upload failed:')} ${t(e.message)}`); }
   finally { sheetControls(false); }
 }
 function disconnectSheet() {
@@ -613,6 +615,15 @@ function disconnectSheet() {
 }
 
 function bindEvents() {
+  $('language-select').addEventListener('change', event => {
+    applyLanguage(event.target.value);
+    serviceCurrency = new Intl.NumberFormat(getLanguageLocale(), { style: 'currency', currency: 'THB', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    setToday();
+    if (state.record) renderCar(state.record);
+    renderServiceHistory();
+    renderWeather(weatherLocation);
+    if (!$('panel-fuel-prices').hidden) loadFuelPrices();
+  });
   $('refresh-fuel-prices').addEventListener('click', loadFuelPrices);
   $('weather-location-button').addEventListener('click', () => fetchWeatherFor(null, true));
   $('weather-refresh-button').addEventListener('click', () => fetchWeatherFor(weatherLocation));
