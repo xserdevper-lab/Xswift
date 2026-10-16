@@ -236,14 +236,15 @@ function formatEffectiveTime(date, time) {
 
 function renderFuelPrices(payload) {
   const { ptt, bcp } = payload.data || {};
-  if (!ptt || !bcp) throw new Error('The price feed is missing PTT or Bangchak data.');
+  const caltex = payload.data?.caltex;
+  if (!ptt || !bcp || !caltex) throw new Error('The price feed is missing PTT, Bangchak, or Caltex data.');
   const tableRows = fuelTypes.map(([label, key]) => {
     const row = document.createElement('tr');
     const type = document.createElement('th');
     type.scope = 'row';
     type.textContent = label;
     row.append(type);
-    for (const [brand, record] of [['ptt', ptt], ['bcp', bcp]]) {
+    for (const [brand, record] of [['ptt', ptt], ['bcp', bcp], ['caltex', caltex]]) {
       const cell = document.createElement('td');
       const rawPrice = record[`oil_${brand}_${key}`];
       const number = rawPrice === null || rawPrice === undefined || rawPrice === '-' ? NaN : Number(rawPrice);
@@ -253,7 +254,7 @@ function renderFuelPrices(payload) {
     return row;
   });
   $('fuel-price-rows').replaceChildren(...tableRows);
-  $('fuel-prices-updated').textContent = `PTT effective ${formatEffectiveTime(ptt.oil_ptt_date, ptt.oil_ptt_time)} · Bangchak effective ${formatEffectiveTime(bcp.oil_bcp_date, bcp.oil_bcp_time)}`;
+  $('fuel-prices-updated').textContent = `PTT effective ${formatEffectiveTime(ptt.oil_ptt_date, ptt.oil_ptt_time)} · Bangchak effective ${formatEffectiveTime(bcp.oil_bcp_date, bcp.oil_bcp_time)} · Caltex effective ${formatEffectiveTime(caltex.oil_caltex_date, caltex.oil_caltex_time)}`;
 
   const tomorrow = payload.tomorrow;
   const tomorrowRows = fuelTypes.map(([label, key]) => {
@@ -262,7 +263,7 @@ function renderFuelPrices(payload) {
     type.scope = 'row';
     type.textContent = label;
     row.append(type);
-    for (const brand of ['ptt', 'bcp']) {
+    for (const brand of ['ptt', 'bcp', 'caltex']) {
       const cell = document.createElement('td');
       const rawPrice = tomorrow?.[brand]?.[key];
       const number = rawPrice === null || rawPrice === undefined || rawPrice === '' || rawPrice === '-' ? NaN : Number(rawPrice);
@@ -301,7 +302,7 @@ async function loadFuelPrices() {
     $('fuel-prices-updated').textContent = 'Current prices are unavailable.';
     const row = document.createElement('tr');
     const message = document.createElement('td');
-    message.colSpan = 3;
+    message.colSpan = 4;
     message.className = 'fuel-price-placeholder';
     message.textContent = 'Could not load current prices. Tap Refresh to try again.';
     row.append(message);

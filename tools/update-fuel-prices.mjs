@@ -16,8 +16,8 @@ const [payload, bangchakResponse] = await Promise.all([
   fetchJson(bangchakFeedUrl, 'Bangchak'),
 ]);
 const bangchak = Array.isArray(bangchakResponse) ? bangchakResponse[0] : bangchakResponse;
-if (payload?.status !== 'success' || !payload?.data?.ptt || !payload?.data?.bcp) {
-  throw new Error('EPPO response is missing PTT or Bangchak prices');
+if (payload?.status !== 'success' || !payload?.data?.ptt || !payload?.data?.bcp || !payload?.data?.caltex) {
+  throw new Error('EPPO response is missing PTT, Bangchak, or Caltex prices');
 }
 
 const bangchakProducts = typeof bangchak?.OilList === 'string'
@@ -49,6 +49,7 @@ const tomorrowDate = day && month && buddhistYear
 payload.tomorrow = {
   ptt: null,
   bcp: bangchakTomorrow,
+  caltex: null,
   effectiveDate: tomorrowDate,
   bcpAnnouncementDate: bangchak.OilMessageDate || '',
   bcpAnnouncementTime: bangchak.OilMessageTime || '',
