@@ -73,6 +73,16 @@ Object.assign(messages.ja, {
   'Installment progress':'分割払いの進捗','Installments paid (of 72)':'支払済み回数（全72回）','{paid} of {total} installments paid':'全{total}回中{paid}回支払済み','{count} remaining':'残り{count}回'
 });
 
+Object.assign(messages.th, {
+  'Decrease paid installments':'ลดจำนวนงวดที่ชำระแล้ว','Increase paid installments':'เพิ่มจำนวนงวดที่ชำระแล้ว'
+});
+Object.assign(messages.ko, {
+  'Decrease paid installments':'납부 회차 줄이기','Increase paid installments':'납부 회차 늘리기'
+});
+Object.assign(messages.ja, {
+  'Decrease paid installments':'支払済み回数を減らす','Increase paid installments':'支払済み回数を増やす'
+});
+
 let currentLanguage = languages.includes(localStorage.getItem(STORAGE_KEY)) ? localStorage.getItem(STORAGE_KEY) : 'en';
 const sourceText = new WeakMap();
 const sourceAttribute = new WeakMap();

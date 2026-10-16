@@ -1,4 +1,4 @@
-import { getLanguageLocale, t } from './i18n.js?v=2';
+import { getLanguageLocale, t } from './i18n.js?v=3';
 
 const FORM_FIELDS = {
   model: 'ce-model', plate: 'ce-plate', price: 'ce-price', taxRenew: 'ce-tax-renew',
@@ -166,7 +166,12 @@ export function renderCar(record = {}) {
 export function readCarForm() {
   return Object.fromEntries(Object.entries(FORM_FIELDS).flatMap(([field, id]) => {
     const input = document.getElementById(id);
-    return input ? [[field, field === 'maintenanceDate' && input.value ? input.value + '-01' : input.value.trim()]] : [];
+    if (!input) return [];
+    if (field === 'installmentsPaid') {
+      const paid = Number(input.value);
+      return [[field, String(Number.isFinite(paid) ? Math.max(0, Math.min(TOTAL_INSTALLMENTS, Math.floor(paid))) : 0)]];
+    }
+    return [[field, field === 'maintenanceDate' && input.value ? input.value + '-01' : input.value.trim()]];
   }));
 }
 
@@ -211,7 +216,7 @@ export function setCarFormEnabled(enabled) {
     const control = document.getElementById(id);
     if (control) control.disabled = !enabled;
   }
-  for (const id of ['fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button', 'reset-fuel-usage-button', 'ce-maintenance-date', 'ce-maintenance-interval', 'ce-installments-paid']) {
+  for (const id of ['fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button', 'reset-fuel-usage-button', 'ce-maintenance-date', 'ce-maintenance-interval', 'ce-installments-paid', 'decrease-installments', 'increase-installments']) {
     const control = document.getElementById(id);
     if (control) control.disabled = !enabled;
   }

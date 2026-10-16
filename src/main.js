@@ -6,11 +6,12 @@ import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncStat
 import { parseLegacyCar } from './legacy-import.js';
 import { loadServiceHistory as loadLocalServiceHistory, saveServiceHistory as saveLocalServiceHistory, createServiceRecord } from './service-history.js';
 import { loadWeatherLocation, saveWeatherLocation, getCurrentLocation, fetchCurrentWeather, describeWeather, isRainCode, weatherIconSvg } from './weather.js?v=1';
-import { applyLanguage, getLanguageLocale, t } from './i18n.js?v=2';
+import { applyLanguage, getLanguageLocale, t } from './i18n.js?v=3';
 import { getUpcomingReminders, formatReminderDate } from './reminders.js?v=1';
 
 const config = window.XSWIFT_CONFIG || {};
 const state = { record: null, toastTimer: 0, installPrompt: null };
+const TOTAL_INSTALLMENTS = 72;
 let serviceHistory = loadLocalServiceHistory();
 let weatherLocation = loadWeatherLocation();
 let weatherBusy = false;
@@ -38,6 +39,18 @@ function toast(message) {
   element.classList.add('show');
   window.clearTimeout(state.toastTimer);
   state.toastTimer = window.setTimeout(() => element.classList.remove('show'), 2800);
+}
+
+function updateInstallmentStepper() {
+  const paid = Math.max(0, Math.min(TOTAL_INSTALLMENTS, Math.floor(Number($('ce-installments-paid').value) || 0)));
+  $('decrease-installments').disabled = !state.record || paid === 0;
+  $('increase-installments').disabled = !state.record || paid === TOTAL_INSTALLMENTS;
+}
+
+function stepInstallments(delta) {
+  const paid = Math.max(0, Math.min(TOTAL_INSTALLMENTS, Math.floor(Number($('ce-installments-paid').value) || 0)));
+  $('ce-installments-paid').value = String(Math.max(0, Math.min(TOTAL_INSTALLMENTS, paid + delta)));
+  updateInstallmentStepper();
 }
 
 function renderVehicle(record) {
@@ -304,6 +317,7 @@ async function loadVehicle() {
     setPhotoPreview('car-img-preview', 'car-img-placeholder', result.carImageUrl);
     setPhotoPreview('car-license-img', 'license-img-placeholder', result.licenseImageUrl);
     setCarFormEnabled(true);
+    updateInstallmentStepper();
     setSyncState('connected', 'Connected');
     if (result.imageErrors) toast(t('Vehicle data loaded, but some photos could not be loaded.'));
   } catch (error) {
@@ -657,6 +671,14 @@ function disconnectSheet() {
 }
 
 function bindEvents() {
+  $('decrease-installments').addEventListener('click', () => stepInstallments(-1));
+  $('increase-installments').addEventListener('click', () => stepInstallments(1));
+  $('ce-installments-paid').addEventListener('input', updateInstallmentStepper);
+  $('ce-installments-paid').addEventListener('change', () => {
+    const paid = Math.max(0, Math.min(TOTAL_INSTALLMENTS, Math.floor(Number($('ce-installments-paid').value) || 0)));
+    $('ce-installments-paid').value = String(paid);
+    updateInstallmentStepper();
+  });
   $('reminder-button').addEventListener('click', () => {
     $('reminder-dialog').showModal();
     $('reminder-button').setAttribute('aria-expanded', 'true');
