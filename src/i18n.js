@@ -54,13 +54,13 @@ Object.assign(messages.ja, {
 });
 
 Object.assign(messages.th, {
-  'Reminders':'การแจ้งเตือน','Due in {days} days':'ครบกำหนดในอีก {days} วัน','Due today':'ครบกำหนดวันนี้','Overdue by {days} days':'เลยกำหนดมาแล้ว {days} วัน'
+  'Reminders':'การแจ้งเตือน','Open reminders':'เปิดการแจ้งเตือน','Due in {days} days':'ครบกำหนดในอีก {days} วัน','Due today':'ครบกำหนดวันนี้','Overdue by {days} days':'เลยกำหนดมาแล้ว {days} วัน','Open reminders ({count})':'เปิดการแจ้งเตือน {count} รายการ','No current reminders.':'ไม่มีรายการแจ้งเตือนในขณะนี้'
 });
 Object.assign(messages.ko, {
-  'Reminders':'알림','Due in {days} days':'기한까지 {days}일','Due today':'오늘 만료','Overdue by {days} days':'기한이 {days}일 지났습니다'
+  'Reminders':'알림','Open reminders':'알림 열기','Due in {days} days':'기한까지 {days}일','Due today':'오늘 만료','Overdue by {days} days':'기한이 {days}일 지났습니다','Open reminders ({count})':'알림 {count}개 열기','No current reminders.':'현재 알림이 없습니다'
 });
 Object.assign(messages.ja, {
-  'Reminders':'リマインダー','Due in {days} days':'期限まであと{days}日','Due today':'本日期限','Overdue by {days} days':'期限超過から{days}日'
+  'Reminders':'リマインダー','Open reminders':'リマインダーを表示','Due in {days} days':'期限まであと{days}日','Due today':'本日期限','Overdue by {days} days':'期限超過から{days}日','Open reminders ({count})':'リマインダーを{count}件表示','No current reminders.':'現在のお知らせはありません'
 });
 
 let currentLanguage = languages.includes(localStorage.getItem(STORAGE_KEY)) ? localStorage.getItem(STORAGE_KEY) : 'en';

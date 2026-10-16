@@ -46,12 +46,17 @@ function renderVehicle(record) {
 }
 
 function renderReminders(record = {}) {
-  const section = $('reminder-section');
+  const button = $('reminder-button');
+  const badge = $('reminder-count');
   const list = $('reminder-list');
-  if (!section || !list) return;
+  if (!button || !badge || !list) return;
   const reminders = getUpcomingReminders(record);
-  section.hidden = reminders.length === 0;
-  $('reminder-count').textContent = String(reminders.length);
+  badge.textContent = String(reminders.length);
+  badge.hidden = reminders.length === 0;
+  button.setAttribute('aria-label', t('Open reminders ({count})', { count: reminders.length }));
+  $('reminder-dialog-count').textContent = String(reminders.length);
+  $('reminder-dialog-count').hidden = reminders.length === 0;
+  $('no-reminder-message').hidden = reminders.length > 0;
   list.replaceChildren(...reminders.map(reminder => {
     const item = document.createElement('li');
     item.className = 'reminder-item';
@@ -463,6 +468,7 @@ function activateTab(activeTab, focusTab = false) {
   panels.forEach(panel => {
     panel.hidden = panel.dataset.tabPanel !== selectedId;
   });
+  $('reminder-button').hidden = selectedId !== 'car';
   if (focusTab) activeTab.focus();
   window.scrollTo(0, 0);
   if (selectedId === 'fuel-prices') loadFuelPrices();
@@ -651,6 +657,15 @@ function disconnectSheet() {
 }
 
 function bindEvents() {
+  $('reminder-button').addEventListener('click', () => {
+    $('reminder-dialog').showModal();
+    $('reminder-button').setAttribute('aria-expanded', 'true');
+  });
+  document.querySelectorAll('[data-close-reminder-dialog]').forEach(button => button.addEventListener('click', () => $('reminder-dialog').close()));
+  $('reminder-dialog').addEventListener('close', () => $('reminder-button').setAttribute('aria-expanded', 'false'));
+  $('reminder-dialog').addEventListener('click', event => {
+    if (event.target === $('reminder-dialog')) $('reminder-dialog').close();
+  });
   $('language-select').addEventListener('change', event => {
     applyLanguage(event.target.value);
     serviceCurrency = new Intl.NumberFormat(getLanguageLocale(), { style: 'currency', currency: 'THB', minimumFractionDigits: 2, maximumFractionDigits: 2 });

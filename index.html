@@ -9,9 +9,9 @@
   <link rel="manifest" href="./manifest.webmanifest?v=2">
   <link rel="icon" type="image/svg+xml" href="./icons/xswift-icon.svg?v=2">
   <link rel="apple-touch-icon" href="./icons/xswift-icon.svg?v=2">
-  <link rel="stylesheet" href="./src/styles.css?v=26">
+  <link rel="stylesheet" href="./src/styles.css?v=27">
   <script src="./config.js?v=6"></script>
-  <script type="module" src="./src/main.js?v=33"></script>
+  <script type="module" src="./src/main.js?v=34"></script>
 
 </head>
 <body>
@@ -20,6 +20,10 @@
       <p id="today-date" class="header-date"></p>
       <div class="header-actions">
         <span id="sync-status" class="sync-status" role="status" aria-live="polite">Not connected</span>
+        <button id="reminder-button" class="notification-button" type="button" aria-label="Open reminders" aria-haspopup="dialog" aria-expanded="false" aria-controls="reminder-dialog">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+          <span id="reminder-count" class="notification-badge" aria-hidden="true" hidden></span>
+        </button>
         <button id="install-app-button" class="button button-outline" type="button" hidden>Install app</button>
       </div>
     </header>
@@ -53,14 +57,6 @@
           </span>
         </div>
       </div>
-      <section id="reminder-section" class="reminder-section" aria-labelledby="reminder-title" aria-live="polite" hidden>
-        <div class="reminder-heading">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 19h18.4L12 3Z"/><path d="M12 9v4m0 3h.01"/></svg>
-          <h3 id="reminder-title">Reminders</h3>
-          <span id="reminder-count" class="reminder-count"></span>
-        </div>
-        <ul id="reminder-list" class="reminder-list"></ul>
-      </section>
       <input id="license-img-input" type="file" accept="image/*" hidden>
 
       <section class="weather-card" aria-labelledby="weather-card-title">
@@ -240,6 +236,19 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
   </main>
+
+  <dialog id="reminder-dialog" class="edit-dialog reminder-dialog" aria-labelledby="reminder-title">
+    <div class="reminder-dialog-heading">
+      <div class="reminder-dialog-title">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 19h18.4L12 3Z"/><path d="M12 9v4m0 3h.01"/></svg>
+        <h2 id="reminder-title">Reminders</h2>
+        <span id="reminder-dialog-count" class="reminder-dialog-count" role="status"></span>
+      </div>
+      <button class="close-button" type="button" aria-label="Close" data-close-reminder-dialog>×</button>
+    </div>
+    <p id="no-reminder-message" class="reminder-empty" hidden>No current reminders.</p>
+    <ul id="reminder-list" class="reminder-list" aria-live="polite"></ul>
+  </dialog>
 
   <dialog id="car-modal" class="edit-dialog">
     <form id="car-form" method="dialog">
