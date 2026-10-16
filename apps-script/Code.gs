@@ -1,5 +1,8 @@
 const XSWIFT_SHEET_ID = '1xxaLYpoQvzXhIzkHllMToVo-SKeM4TKNik7kqDbKID4';
 const XSWIFT_TAB_NAME = 'รถยนต์';
+const XSWIFT_SERVICE_HISTORY_TAB_NAME = 'ประวัติบำรุงรักษา';
+const XSWIFT_MAX_SERVICE_RECORDS = 500;
+const XSWIFT_MAX_SERVICE_DESCRIPTION_LENGTH = 500;
 const XSWIFT_SESSION_MS = 12 * 60 * 60 * 1000;
 const XSWIFT_PIN_ITERATIONS = 5000;
 const XSWIFT_MAX_REQUEST_BYTES = 1800000;
@@ -54,6 +57,8 @@ function doPost(event) {
     switch (action) {
       case 'getCar': return json_({ ok: true, record: loadCarRecord_() });
       case 'saveCar': return json_({ ok: true, record: saveCarRecord_(payload.record || payload) });
+      case 'getServiceHistory': return json_({ ok: true, records: loadServiceHistory_() });
+      case 'saveServiceHistory': return json_({ ok: true, records: saveServiceHistory_(payload.records) });
       case 'uploadImage': return json_({ ok: true, fileId: uploadImage_(payload) });
       case 'getImage': return json_({ ok: true, image: loadImage_(String(payload.fileId || '')) });
       default: throw apiError_('UNKNOWN_ACTION', 'This action is not available.');
@@ -143,6 +148,78 @@ function loadCarRecord_() {
     if (XSWIFT_FIELDS.indexOf(key) !== -1) record[key] = String(row[1] || '');
   }
   return record;
+}
+
+function loadServiceHistory_() {
+  const sheet = getServiceHistorySheet_();
+  if (sheet.getLastRow() < 2) return [];
+  return sheet.getRange(2, 1, sheet.getLastRow() - 1, 5).getDisplayValues()
+    .filter(row => row.some(value => value !== ''))
+    .map(row => ({ id: row[0], date: row[1], description: unescapeSheetText_(row[2]), amount: Number(row[3]), createdAt: row[4] }));
+}
+
+function saveServiceHistory_(input) {
+  if (!Array.isArray(input) || input.length > XSWIFT_MAX_SERVICE_RECORDS) {
+    throw apiError_('INVALID_DATA', 'Service history must contain no more than 500 records.');
+  }
+  const records = input.map(record => {
+    if (!record || typeof record !== 'object' || Array.isArray(record)) throw apiError_('INVALID_DATA', 'A service record is invalid.');
+    const id = String(record.id || '').trim();
+    const date = String(record.date || '').trim();
+    const description = String(record.description || '').trim();
+    const amount = Number(record.amount);
+    const createdAt = String(record.createdAt || '');
+    if (!/^[A-Za-z0-9_-]{1,80}$/.test(id) || !isValidServiceDate_(date) || !description || description.length > XSWIFT_MAX_SERVICE_DESCRIPTION_LENGTH) {
+      throw apiError_('INVALID_DATA', 'A service record has invalid details.');
+    }
+    if (!Number.isFinite(amount) || amount < 0 || amount > 100000000) throw apiError_('INVALID_DATA', 'A service record has an invalid cost.');
+    return [id, date, safeSheetText_(description), String(Math.round(amount * 100) / 100), createdAt];
+  });
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = getServiceHistorySheet_();
+    const lastRow = sheet.getLastRow();
+    if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 5).clearContent();
+    if (records.length) {
+      const range = sheet.getRange(2, 1, records.length, 5);
+      range.setNumberFormat('@');
+      range.setValues(records);
+    }
+  } finally {
+    lock.releaseLock();
+  }
+  return input.map(record => ({ id: String(record.id).trim(), date: String(record.date).trim(), description: String(record.description).trim(), amount: Math.round(Number(record.amount) * 100) / 100, createdAt: String(record.createdAt || '') }));
+}
+
+function getServiceHistorySheet_() {
+  const spreadsheet = SpreadsheetApp.openById(XSWIFT_SHEET_ID);
+  let sheet = spreadsheet.getSheetByName(XSWIFT_SERVICE_HISTORY_TAB_NAME);
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(XSWIFT_SERVICE_HISTORY_TAB_NAME);
+    sheet.getRange(1, 1, 1, 5).setValues([['id', 'date', 'description', 'amount', 'createdAt']]);
+  }
+  const header = sheet.getRange(1, 1, 1, 5).getDisplayValues()[0];
+  const expected = ['id', 'date', 'description', 'amount', 'createdAt'];
+  if (expected.some((value, index) => header[index] !== value)) {
+    throw apiError_('SHEET_FORMAT', 'The service history sheet has an unexpected format and was not changed.');
+  }
+  return sheet;
+}
+
+function isValidServiceDate_(date) {
+  if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(date)) return false;
+  const parsed = new Date(date + 'T00:00:00Z');
+  return !isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === date;
+}
+
+function safeSheetText_(value) {
+  return /^[=+\-@]/.test(value) ? "'" + value : value;
+}
+
+function unescapeSheetText_(value) {
+  return /^'[=+\-@]/.test(value) ? value.slice(1) : value;
 }
 
 function saveCarRecord_(input) {

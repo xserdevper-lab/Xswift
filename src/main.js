@@ -1,12 +1,14 @@
 
-import { loginWithPin, getCar as getRemoteCar, saveCar as saveRemoteCar, clearSession } from './xswift-api.js?v=2';
+import { loginWithPin, getCar as getRemoteCar, saveCar as saveRemoteCar, getServiceHistory as getRemoteServiceHistory, saveServiceHistory as saveRemoteServiceHistory, clearSession } from './xswift-api.js?v=3';
 import { uploadCarImage } from './car-drive.js?v=2';
 import { syncCar, saveSyncedCar } from './car-sync.js?v=2';
 import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=5';
 import { parseLegacyCar } from './legacy-import.js';
+import { loadServiceHistory as loadLocalServiceHistory, saveServiceHistory as saveLocalServiceHistory, createServiceRecord } from './service-history.js';
 
 const config = window.XSWIFT_CONFIG || {};
 const state = { record: null, toastTimer: 0, installPrompt: null };
+let serviceHistory = loadLocalServiceHistory();
 const $ = id => document.getElementById(id);
 const fuelPriceFeed = './fuel-prices.json';
 const fuelTypes = [
@@ -38,13 +40,58 @@ function setBusy(busy) {
   if (pinInput) pinInput.disabled = busy;
   if (pinButton) pinButton.disabled = busy || !requireConfig();
   if (signOutButton) signOutButton.disabled = busy || !connected;
-  for (const id of ['edit-car-button', 'save-memo-button', 'save-car-button', 'fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button', 'reset-fuel-usage-button']) {
+  for (const id of ['edit-car-button', 'save-memo-button', 'save-car-button', 'fuel-amount-input', 'fuel-add-button', 'fuel-limit-input', 'save-fuel-limit-button', 'reset-fuel-usage-button', 'add-service-record-button']) {
     const control = $(id);
     if (control) control.disabled = busy || !connected;
   }
   $('car-content').classList.toggle('is-loading', busy);
 }
 function requireConfig() { return true; }
+
+const serviceCurrency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'THB', maximumFractionDigits: 2 });
+function renderServiceHistory() {
+  const list = $('service-history-list');
+  if (!list) return;
+  list.replaceChildren();
+  const total = serviceHistory.reduce((sum, record) => sum + record.amount, 0);
+  $('service-history-count').textContent = `${serviceHistory.length} ${serviceHistory.length === 1 ? 'record' : 'records'}`;
+  $('service-history-total').textContent = serviceCurrency.format(total);
+  $('service-history-empty').hidden = serviceHistory.length > 0;
+  list.hidden = serviceHistory.length === 0;
+  for (const record of serviceHistory) {
+    const item = document.createElement('li'); item.className = 'service-history-item';
+    const details = document.createElement('div'); details.className = 'service-history-item-details';
+    const title = document.createElement('strong'); title.textContent = record.description;
+    const date = document.createElement('time'); date.dateTime = record.date;
+    date.textContent = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${record.date}T00:00:00Z`));
+    const amount = document.createElement('strong'); amount.className = 'service-history-amount'; amount.textContent = serviceCurrency.format(record.amount);
+    const remove = document.createElement('button'); remove.className = 'service-history-delete'; remove.type = 'button'; remove.textContent = 'Delete';
+    remove.setAttribute('aria-label', `Delete ${record.description} service record`); remove.addEventListener('click', () => deleteServiceRecord(record.id));
+    details.append(title, date); item.append(details, amount, remove); list.append(item);
+  }
+}
+
+function localTodayISO() {
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+async function saveServiceRecord(event) {
+  event.preventDefault();
+  const form = $('service-form'); if (!form.reportValidity()) return;
+  try {
+    const record = createServiceRecord({ date: $('service-date-input').value, description: $('service-description-input').value, amount: Number($('service-cost-input').value) });
+    serviceHistory = saveLocalServiceHistory([record, ...serviceHistory]); renderServiceHistory(); form.reset(); $('service-dialog').close(); toast('Service record saved on this device.');
+  } catch (error) { toast(error.message); }
+}
+
+function deleteServiceRecord(id) {
+  const record = serviceHistory.find(item => item.id === id);
+  if (!record || !window.confirm(`Delete the service record “${record.description}”?`)) return;
+  try { serviceHistory = saveLocalServiceHistory(serviceHistory.filter(item => item.id !== id)); renderServiceHistory(); toast('Service record deleted from this device.'); }
+  catch (error) { toast(error.message); }
+}
 
 async function loadVehicle() {
   setBusy(true);
@@ -371,30 +418,34 @@ async function connectSheet() {
     sheetConnected = true;
     $('sheet-pin').value = '';
     $('sheet-pin').hidden = true;
-    sheetStatus('Connected. No data has been downloaded or uploaded.');
+    sheetStatus('Connected. Data transfers only when you choose Download or Upload.');
   } catch(e) { sheetStatus('Connection failed: ' + e.message); }
   finally { sheetControls(false); }
 }
 async function pullSheet() {
-  if (!sheetConnected || !window.confirm('Replace vehicle details on this device with Google Sheets data? Local details will be overwritten. Photos are not included.')) return;
+  if (!sheetConnected || !window.confirm('Replace vehicle details and service history on this device with Google Sheets data? Local details and history will be overwritten. Photos are not included.')) return;
   sheetControls(true); sheetStatus('Downloading from Google Sheets…');
   try {
-    const remote = await getRemoteCar();
+    const [remote, remoteHistory] = await Promise.all([getRemoteCar(), getRemoteServiceHistory()]);
     const next = { ...state.record, ...Object.fromEntries(Object.entries(remote).filter(([key]) => !['carImageFileId','licenseImageFileId'].includes(key))) };
     await saveSyncedCar(config,next);
+    serviceHistory = saveLocalServiceHistory(remoteHistory);
+    renderServiceHistory();
     await loadVehicle();
-    sheetStatus('Vehicle details downloaded and saved on this device.');
+    sheetStatus('Vehicle details and service history downloaded to this device.');
   } catch(e) { sheetStatus('Download failed: ' + e.message); }
   finally { sheetControls(false); }
 }
 async function pushSheet() {
-  if (!sheetConnected || !state.record || !window.confirm('Overwrite vehicle details in Google Sheets with this device\'s details? Photos will not be uploaded.')) return;
+  if (!sheetConnected || !state.record || !window.confirm('Overwrite vehicle details and service history in Google Sheets with this device\'s data? Photos will not be uploaded.')) return;
   sheetControls(true); sheetStatus('Uploading to Google Sheets…');
   try {
     const remote = await getRemoteCar();
     const next = { ...remote, ...Object.fromEntries(Object.entries(state.record).filter(([key]) => !['carImageFileId','licenseImageFileId'].includes(key))) };
-    await saveRemoteCar(next);
-    sheetStatus('Vehicle details uploaded to Google Sheets.');
+    const results = await Promise.allSettled([saveRemoteCar(next), saveRemoteServiceHistory(serviceHistory)]);
+    const failed = results.filter(result => result.status === 'rejected');
+    if (failed.length) throw new Error(failed.map(result => result.reason?.message || 'One data section failed').join('; '));
+    sheetStatus('Vehicle details and service history uploaded to Google Sheets.');
   } catch(e) { sheetStatus('Upload failed: ' + e.message); }
   finally { sheetControls(false); }
 }
@@ -436,6 +487,9 @@ function bindEvents() {
   $('fuel-form').addEventListener('submit', addFuelExpense);
   $('fuel-settings-form').addEventListener('submit', saveFuelLimit);
   $('reset-fuel-usage-button').addEventListener('click', resetFuelUsage);
+  $('add-service-record-button').addEventListener('click', () => { $('service-date-input').value = localTodayISO(); $('service-dialog').showModal(); });
+  $('service-form').addEventListener('submit', saveServiceRecord);
+  document.querySelectorAll('[data-close-service-dialog]').forEach(button => button.addEventListener('click', () => $('service-dialog').close()));
   document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => $('car-modal').close()));
   document.querySelectorAll('[data-close-fuel-dialog]').forEach(button => button.addEventListener('click', () => $('fuel-dialog').close()));
   $('car-img-input').addEventListener('change', event => {
@@ -456,6 +510,7 @@ async function initialize() {
   setToday();
   setupInstallApp();
   bindEvents();
+  renderServiceHistory();
   setCarFormEnabled(false);
   try {
     await loadVehicle();

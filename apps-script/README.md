@@ -14,11 +14,12 @@ This backend lets the public GitHub Pages app read one vehicle record and its tw
 
 - `login` checks the PIN and issues a signed session token that expires after 12 hours.
 - `getCar` and `saveCar` read or update only the known fields in the `รถยนต์` key/value tab.
+- `getServiceHistory` and `saveServiceHistory` read or replace up to 500 maintenance records in a separate `ประวัติบำรุงรักษา` tab. The tab is created on first use with the `id | date | description | amount | createdAt` header.
 - `uploadImage` accepts JPEG, PNG, or WebP data up to 1.1 MB and stores the file in the owner's Drive.
 - `getImage` returns only an image ID currently referenced by the vehicle record.
 - Every data or image action except `login` requires a valid session token. Requests are URL-encoded POSTs; tokens are never included in URLs.
 
-The script creates the `รถยนต์` tab if missing, initializes its `key | value` header if empty, and leaves unrelated tabs and rows alone. It rejects an unexpected header and unknown fields. Uploaded image IDs are checked before the record can reference them.
+The script creates the `รถยนต์` tab if missing, initializes its `key | value` header if empty, and leaves unrelated tabs and rows alone. It creates the maintenance tab when first used and rejects an unexpected header. It rejects unknown vehicle fields. Uploaded image IDs are checked before the record can reference them.
 
 ## Session, PIN, and maintenance
 

@@ -9,9 +9,9 @@
   <link rel="manifest" href="./manifest.webmanifest?v=2">
   <link rel="icon" type="image/svg+xml" href="./icons/xswift-icon.svg?v=2">
   <link rel="apple-touch-icon" href="./icons/xswift-icon.svg?v=2">
-  <link rel="stylesheet" href="./src/styles.css?v=20">
+  <link rel="stylesheet" href="./src/styles.css?v=21">
   <script src="./config.js?v=6"></script>
-  <script type="module" src="./src/main.js?v=27"></script>
+  <script type="module" src="./src/main.js?v=28"></script>
 
 </head>
 <body>
@@ -114,6 +114,16 @@
           </div>
         </div>
       </section>
+      <section class="data-section service-history-section" aria-labelledby="service-history-title">
+        <div class="section-heading">
+          <h3 id="service-history-title">Service & repair history</h3>
+          <button id="add-service-record-button" class="button button-outline" type="button">Add record</button>
+        </div>
+        <p class="service-history-note">Records are saved on this device. Use Google Sheets sync in Settings to back them up.</p>
+        <div class="service-history-summary"><span id="service-history-count">0 records</span><strong id="service-history-total">฿0</strong></div>
+        <p id="service-history-empty" class="service-history-empty">No service records yet.</p>
+        <ul id="service-history-list" class="service-history-list" aria-label="Service and repair records" hidden></ul>
+      </section>
       <section class="data-section fuel-reset-section" aria-labelledby="fuel-reset-title">
         <div class="section-heading"><h3 id="fuel-reset-title">Fuel usage</h3></div>
         <p class="fuel-reset-description">Clear the accumulated fuel amount. Your budget limit will stay the same.</p>
@@ -169,7 +179,7 @@
           <div class="settings-photo-row"><div><strong>Vehicle photo</strong><small>Stored on this device</small></div><button id="settings-car-photo" class="button button-outline" type="button">Change</button></div>
           <div class="settings-photo-row"><div><strong>Driver's license photo</strong><small>Stored on this device</small></div><button id="settings-license-photo" class="button button-outline" type="button">Change</button></div>
         </div>
-        <section class="settings-card" aria-label="Google Sheets sync" style="padding:16px;margin-top:16px"><h3>Google Sheets</h3><p id="sheet-sync-status" role="status">Not connected. Vehicle data stays on this device.</p><label for="sheet-pin">Connect only when you choose (6-digit private PIN)</label><input id="sheet-pin" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" placeholder="PIN" style="display:block;width:100%;margin:10px 0"><button id="sheet-connect" class="button button-outline" type="button">Connect Google Sheets</button><button id="sheet-sync-button" class="button" type="button" style="display:block;width:100%;margin-top:12px" disabled>↻ ซิงค์ข้อมูล</button><div id="sheet-sync-actions" hidden style="display:grid;gap:10px;margin-top:12px"><button id="sheet-pull" class="button button-outline" type="button">Download from Google Sheets</button><button id="sheet-push" class="button button-outline" type="button">Upload this device's data</button><button id="sheet-disconnect" class="button button-outline" type="button">Disconnect (keep local data)</button></div><p style="font-size:12px;margin-top:12px">Nothing syncs automatically. Confirm before replacing data. Photos are not included in this first sync.</p></section>
+        <section class="settings-card" aria-label="Google Sheets sync" style="padding:16px;margin-top:16px"><h3>Google Sheets</h3><p id="sheet-sync-status" role="status">Not connected. Vehicle data and service history stay on this device.</p><label for="sheet-pin">Connect only when you choose (6-digit private PIN)</label><input id="sheet-pin" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" placeholder="PIN" style="display:block;width:100%;margin:10px 0"><button id="sheet-connect" class="button button-outline" type="button">Connect Google Sheets</button><button id="sheet-sync-button" class="button" type="button" style="display:block;width:100%;margin-top:12px" disabled>↻ Sync data</button><div id="sheet-sync-actions" hidden style="display:grid;gap:10px;margin-top:12px"><button id="sheet-pull" class="button button-outline" type="button">Download from Google Sheets</button><button id="sheet-push" class="button button-outline" type="button">Upload this device's data</button><button id="sheet-disconnect" class="button button-outline" type="button">Disconnect (keep local data)</button></div><p style="font-size:12px;margin-top:12px">Vehicle details and service history transfer only when you choose Download or Upload. Photos are not included.</p></section>
         <form id="fuel-settings-form" class="settings-account fuel-settings-form">
           <label for="fuel-limit-input"><strong>Fuel budget limit</strong><small>Set your total fuel budget in THB.</small></label>
           <div class="fuel-limit-control"><div class="fuel-amount-field"><span aria-hidden="true">฿</span><input id="fuel-limit-input" type="number" min="1" step="1" inputmode="numeric" value="5000" disabled></div><button id="save-fuel-limit-button" class="button button-outline" type="submit" disabled>Save</button></div>
@@ -228,6 +238,15 @@
       <div class="dialog-head"><div><p class="eyebrow">FUEL BUDGET</p><h2>Add fuel fill</h2></div><button class="close-button" type="button" aria-label="Close" data-close-fuel-dialog>×</button></div>
       <label class="form-field" for="fuel-amount-input">Amount (THB)<input id="fuel-amount-input" type="number" min="1" step="1" inputmode="numeric" placeholder="e.g. 1,000" required disabled></label>
       <div class="dialog-actions"><button class="button button-outline" type="button" data-close-fuel-dialog>Cancel</button><button class="button button-dark" type="submit">Add fill</button></div>
+    </form>
+  </dialog>
+  <dialog id="service-dialog" class="edit-dialog">
+    <form id="service-form">
+      <div class="dialog-head"><div><p class="eyebrow">VEHICLE MAINTENANCE</p><h2>Add service record</h2></div><button class="close-button" type="button" aria-label="Close" data-close-service-dialog>×</button></div>
+      <label class="form-field" for="service-date-input">Date<input id="service-date-input" type="date" required></label>
+      <label class="form-field" for="service-description-input">Service or repair details<textarea id="service-description-input" rows="3" maxlength="500" placeholder="e.g. Engine oil and filter replacement" required></textarea></label>
+      <label class="form-field" for="service-cost-input">Cost (THB)<input id="service-cost-input" type="number" min="0" max="100000000" step="0.01" inputmode="decimal" placeholder="e.g. 1,500" required></label>
+      <div class="dialog-actions"><button class="button button-outline" type="button" data-close-service-dialog>Cancel</button><button id="save-service-record-button" class="button button-dark" type="submit">Save record</button></div>
     </form>
   </dialog>
 </body>

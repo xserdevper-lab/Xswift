@@ -104,6 +104,16 @@ export async function saveCar(record) {
   return result.record || record;
 }
 
+export async function getServiceHistory() {
+  const result = await apiRequest('getServiceHistory');
+  return Array.isArray(result.records) ? result.records : [];
+}
+
+export async function saveServiceHistory(records) {
+  const result = await apiRequest('saveServiceHistory', { records });
+  return Array.isArray(result.records) ? result.records : records;
+}
+
 function canvasBlob(canvas, quality) {
   return new Promise((resolve, reject) => {
     canvas.toBlob(blob => blob ? resolve(blob) : reject(new XswiftApiError('IMAGE_ERROR', 'Could not prepare this photo.')), 'image/jpeg', quality);
