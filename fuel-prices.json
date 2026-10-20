@@ -1,6 +1,6 @@
 {
   "status": "success",
-  "last_updated": "9 October 2026",
+  "last_updated": "20 October 2026",
   "data": {
     "ptt": {
       "oil_ptt_gl95": "50.43",
@@ -159,24 +159,24 @@
       "oil_susco2_gs95p": "-",
       "oil_susco2_gs99p": "-",
       "oil_susco2_gl95p": "-",
-      "oil_susco2_date": "2026-10-09",
+      "oil_susco2_date": "2026-10-20",
       "oil_susco2_time": "05:00"
     }
   },
   "tomorrow": {
     "ptt": null,
     "bcp": {
-      "gh95": "41.44",
-      "gh91": "41.07",
+      "gh95": "42.04",
+      "gh91": "41.67",
       "e20": "35.69",
       "e85": "31.63",
-      "ds": "42.94",
+      "ds": "43.54",
       "pds": "50.05",
       "dsb20": "37.19"
     },
     "caltex": null,
-    "effectiveDate": "2026-10-21",
-    "bcpAnnouncementDate": "08/10/2569",
-    "bcpAnnouncementTime": "20:40"
+    "effectiveDate": "2026-10-22",
+    "bcpAnnouncementDate": "20/10/2569",
+    "bcpAnnouncementTime": "21:40"
   }
 }
