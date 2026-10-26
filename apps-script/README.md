@@ -13,13 +13,15 @@ This backend lets the public GitHub Pages app read one vehicle record and its tw
 ## What the backend permits
 
 - `login` checks the PIN and issues a signed session token that expires after 12 hours.
-- `getCar` and `saveCar` read or update only the known fields in the `รถยนต์` key/value tab, including the paid installment count (`installmentsPaid`, 0–72).
-- `getServiceHistory` and `saveServiceHistory` read or replace up to 500 service receipts in a separate `ประวัติบำรุงรักษา` tab. Each receipt stores its date, itemized descriptions/quantities/unit prices, and calculated total in the existing `id | date | description | amount | createdAt` columns. Older single-item rows remain readable.
+- `getCar` reads the newest row in `บันทึกรถ`, falling back to the original `รถยนต์` key/value tab for existing data. `saveCar` appends a full vehicle snapshot with a timestamp and all known fields, including the paid installment count (`installmentsPaid`, 0–72), fuel budget and usage, notes, maintenance dates, and Drive photo IDs.
+- `getServiceHistory` combines legacy receipts in `ประวัติบำรุงรักษา` with the append-only event log in `ประวัติบำรุงรักษา (บันทึก)`. Upload appends events only for new/changed receipts and deletion markers; it does not clear or rewrite prior rows. Itemized descriptions, quantities, unit prices, and totals are retained.
 - `uploadImage` accepts JPEG, PNG, or WebP data up to 1.1 MB and stores the file in the owner's Drive.
 - `getImage` returns only an image ID currently referenced by the vehicle record.
 - Every data or image action except `login` requires a valid session token. Requests are URL-encoded POSTs; tokens are never included in URLs.
 
-The script creates the `รถยนต์` tab if missing, initializes its `key | value` header if empty, and leaves unrelated tabs and rows alone. It creates the maintenance tab when first used and rejects an unexpected header. It rejects unknown vehicle fields. Uploaded image IDs are checked before the record can reference them.
+The original `รถยนต์` key/value and `ประวัติบำรุงรักษา` tabs are kept for legacy reads. New uploads use `บันทึกรถ` with columns `eventId | savedAt |` followed by the ordered fields listed in `Code.gs`, and `ประวัติบำรุงรักษา (บันทึก)` with columns `eventId | receiptId | operation | date | itemsJson | amount | createdAt`. These tabs are created as needed and their headers are validated before appending. Existing rows are never cleared or edited by upload. Unrelated tabs and rows are left alone. The script rejects unknown vehicle fields. Uploaded image IDs are checked before the record can reference them.
+
+The app still uploads only when the user selects **Upload this device's data**. The vehicle photo and driver's-license photo binaries remain in Drive; the snapshot stores their file IDs. After replacing `Code.gs`, create a new Apps Script web-app version before using the new row-based schema.
 
 ## Session, PIN, and maintenance
 

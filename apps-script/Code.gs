@@ -1,6 +1,10 @@
 const XSWIFT_SHEET_ID = '1xxaLYpoQvzXhIzkHllMToVo-SKeM4TKNik7kqDbKID4';
 const XSWIFT_TAB_NAME = 'รถยนต์';
+const XSWIFT_CAR_HISTORY_TAB_NAME = 'บันทึกรถ';
+const XSWIFT_CAR_HISTORY_HEADERS = ['eventId', 'savedAt'];
 const XSWIFT_SERVICE_HISTORY_TAB_NAME = 'ประวัติบำรุงรักษา';
+const XSWIFT_SERVICE_EVENTS_TAB_NAME = 'ประวัติบำรุงรักษา (บันทึก)';
+const XSWIFT_SERVICE_EVENT_HEADERS = ['eventId', 'receiptId', 'operation', 'date', 'itemsJson', 'amount', 'createdAt'];
 const XSWIFT_MAX_SERVICE_RECORDS = 500;
 const XSWIFT_MAX_SERVICE_ITEMS = 50;
 const XSWIFT_MAX_SERVICE_DESCRIPTION_LENGTH = 500;
@@ -16,6 +20,7 @@ const XSWIFT_FIELDS = [
   'fuelLimit', 'fuelSpent'
 ];
 const XSWIFT_IMAGE_FIELDS = ['carImageFileId', 'licenseImageFileId'];
+XSWIFT_CAR_HISTORY_HEADERS.push.apply(XSWIFT_CAR_HISTORY_HEADERS, XSWIFT_FIELDS);
 
 /** Run once from the spreadsheet-bound Apps Script editor to create the private app PIN. */
 function setupXswift() {
@@ -142,6 +147,19 @@ function constantTimeEqual_(left, right) {
 
 function loadCarRecord_() {
   const sheet = getCarSheet_();
+  const historySheet = getCarHistorySheet_(false);
+  if (historySheet && historySheet.getLastRow() > 1) {
+    const headers = historySheet.getRange(1, 1, 1, XSWIFT_CAR_HISTORY_HEADERS.length).getDisplayValues()[0];
+    if (XSWIFT_CAR_HISTORY_HEADERS.some((header, index) => headers[index] !== header)) {
+      throw apiError_('SHEET_FORMAT', 'The vehicle history sheet has an unexpected format and was not changed.');
+    }
+    const rows = historySheet.getRange(2, 1, historySheet.getLastRow() - 1, XSWIFT_CAR_HISTORY_HEADERS.length).getDisplayValues();
+    for (let index = rows.length - 1; index >= 0; index--) {
+      const row = rows[index];
+      if (!row[0] || !row[1]) continue;
+      return Object.fromEntries(XSWIFT_FIELDS.map((field, fieldIndex) => [field, unescapeSheetText_(String(row[fieldIndex + 2] || ''))]));
+    }
+  }
   const values = sheet.getRange(1, 1, Math.max(sheet.getLastRow(), 1), 2).getDisplayValues();
   const record = Object.fromEntries(XSWIFT_FIELDS.map(field => [field, '']));
   for (const row of values.slice(1)) {
@@ -152,11 +170,23 @@ function loadCarRecord_() {
 }
 
 function loadServiceHistory_() {
-  const sheet = getServiceHistorySheet_();
-  if (sheet.getLastRow() < 2) return [];
-  return sheet.getRange(2, 1, sheet.getLastRow() - 1, 5).getDisplayValues()
+  const records = new Map();
+  const legacySheet = getServiceHistorySheet_();
+  if (legacySheet.getLastRow() > 1) legacySheet.getRange(2, 1, legacySheet.getLastRow() - 1, 5).getDisplayValues()
     .filter(row => row.some(value => value !== ''))
-    .map(row => ({ id: row[0], date: row[1], items: parseServiceItems_(unescapeSheetText_(row[2]), Number(row[3])), amount: Number(row[3]), createdAt: row[4] }));
+    .forEach(row => records.set(row[0], { id: row[0], date: row[1], items: parseServiceItems_(unescapeSheetText_(row[2]), Number(row[3])), amount: Number(row[3]), createdAt: row[4] }));
+
+  const eventSheet = getServiceEventsSheet_(false);
+  if (eventSheet && eventSheet.getLastRow() > 1) {
+    assertSheetHeaders_(eventSheet, XSWIFT_SERVICE_EVENT_HEADERS, 'service event');
+    eventSheet.getRange(2, 1, eventSheet.getLastRow() - 1, XSWIFT_SERVICE_EVENT_HEADERS.length).getDisplayValues()
+      .filter(row => row[0] && row[1] && (row[2] === 'upsert' || row[2] === 'delete'))
+      .forEach(row => {
+        if (row[2] === 'delete') records.delete(row[1]);
+        else records.set(row[1], { id: row[1], date: row[3], items: parseServiceItems_(unescapeSheetText_(row[4]), Number(row[5])), amount: Number(row[5]), createdAt: row[6] });
+      });
+  }
+  return Array.from(records.values());
 }
 
 function saveServiceHistory_(input) {
@@ -187,24 +217,52 @@ function saveServiceHistory_(input) {
     if (!Number.isFinite(amount) || amount > 100000000) throw apiError_('INVALID_DATA', 'A service receipt total is invalid.');
     return { id: id, date: date, items: cleanItems, amount: amount, createdAt: createdAt };
   });
+  if (new Set(normalized.map(record => record.id)).size !== normalized.length) {
+    throw apiError_('INVALID_DATA', 'Service history contains duplicate receipt IDs.');
+  }
   if (normalized.some(record => JSON.stringify(record.items).length > 45000) || JSON.stringify(normalized).length > 450000) throw apiError_('INVALID_DATA', 'Service history is too large to save.');
-  const records = normalized.map(record => [record.id, record.date, safeSheetText_(JSON.stringify(record.items)), String(record.amount), record.createdAt]);
-
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
-    const sheet = getServiceHistorySheet_();
-    const lastRow = sheet.getLastRow();
-    if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 5).clearContent();
-    if (records.length) {
-      const range = sheet.getRange(2, 1, records.length, 5);
-      range.setNumberFormat('@');
-      range.setValues(records);
-    }
+    getServiceHistorySheet_(); // Validate the legacy source before appending any events.
+    const current = new Map(loadServiceHistory_().map(record => [record.id, record]));
+    const desired = new Map(normalized.map(record => [record.id, record]));
+    const rows = [];
+    current.forEach((record, id) => {
+      if (!desired.has(id)) rows.push(serviceEventRow_({ id: id, operation: 'delete', createdAt: new Date().toISOString() }));
+    });
+    desired.forEach((record, id) => {
+      const previous = current.get(id);
+      if (!previous || serviceRecordSignature_(previous) !== serviceRecordSignature_(record)) {
+        rows.push(serviceEventRow_({ ...record, operation: 'upsert' }));
+      }
+    });
+    if (rows.length) appendRows_(getServiceEventsSheet_(true), rows);
   } finally {
     lock.releaseLock();
   }
   return normalized;
+}
+
+function serviceRecordSignature_(record) {
+  return JSON.stringify({ date: String(record.date || ''), items: record.items || [], amount: Number(record.amount) || 0 });
+}
+
+function serviceEventRow_(record) {
+  return [
+    Utilities.getUuid(), safeSheetText_(String(record.id || '')), safeSheetText_(String(record.operation || 'upsert')), safeSheetText_(String(record.date || '')),
+    record.items ? safeSheetText_(JSON.stringify(record.items)) : '', safeSheetText_(String(record.amount || 0)), safeSheetText_(String(record.createdAt || new Date().toISOString()))
+  ];
+}
+
+function appendRows_(sheet, rows) {
+  if (!rows.length) return;
+  const startRow = sheet.getLastRow() + 1;
+  const extraRows = startRow + rows.length - 1 - sheet.getMaxRows();
+  if (extraRows > 0) sheet.insertRowsAfter(sheet.getMaxRows(), extraRows);
+  const range = sheet.getRange(startRow, 1, rows.length, rows[0].length);
+  range.setNumberFormat('@');
+  range.setValues(rows);
 }
 
 function parseServiceItems_(value, legacyAmount) {
@@ -230,6 +288,45 @@ function getServiceHistorySheet_() {
   return sheet;
 }
 
+function getServiceEventsSheet_(create) {
+  const spreadsheet = SpreadsheetApp.openById(XSWIFT_SHEET_ID);
+  let sheet = spreadsheet.getSheetByName(XSWIFT_SERVICE_EVENTS_TAB_NAME);
+  if (!sheet && !create) return null;
+  if (!sheet) sheet = spreadsheet.insertSheet(XSWIFT_SERVICE_EVENTS_TAB_NAME);
+  if (sheet.getLastRow() === 0) {
+    if (!create) return sheet;
+    const range = sheet.getRange(1, 1, 1, XSWIFT_SERVICE_EVENT_HEADERS.length);
+    range.setNumberFormat('@');
+    range.setValues([XSWIFT_SERVICE_EVENT_HEADERS]);
+  } else {
+    assertSheetHeaders_(sheet, XSWIFT_SERVICE_EVENT_HEADERS, 'service event');
+  }
+  return sheet;
+}
+
+function getCarHistorySheet_(create) {
+  const spreadsheet = SpreadsheetApp.openById(XSWIFT_SHEET_ID);
+  let sheet = spreadsheet.getSheetByName(XSWIFT_CAR_HISTORY_TAB_NAME);
+  if (!sheet && !create) return null;
+  if (!sheet) sheet = spreadsheet.insertSheet(XSWIFT_CAR_HISTORY_TAB_NAME);
+  if (sheet.getLastRow() === 0) {
+    if (!create) return sheet;
+    const range = sheet.getRange(1, 1, 1, XSWIFT_CAR_HISTORY_HEADERS.length);
+    range.setNumberFormat('@');
+    range.setValues([XSWIFT_CAR_HISTORY_HEADERS]);
+  } else {
+    assertSheetHeaders_(sheet, XSWIFT_CAR_HISTORY_HEADERS, 'vehicle history');
+  }
+  return sheet;
+}
+
+function assertSheetHeaders_(sheet, expected, description) {
+  const actual = sheet.getRange(1, 1, 1, expected.length).getDisplayValues()[0];
+  if (expected.some((value, index) => actual[index] !== value)) {
+    throw apiError_('SHEET_FORMAT', 'The ' + description + ' sheet has an unexpected format and was not changed.');
+  }
+}
+
 function isValidServiceDate_(date) {
   if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(date)) return false;
   const parsed = new Date(date + 'T00:00:00Z');
@@ -248,7 +345,7 @@ function saveCarRecord_(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw apiError_('INVALID_DATA', 'Vehicle data is invalid.');
   const unknown = Object.keys(input).filter(key => XSWIFT_FIELDS.indexOf(key) === -1);
   if (unknown.length) throw apiError_('INVALID_FIELD', 'Vehicle data contains an unsupported field.');
-  const sheet = getCarSheet_();
+  getCarSheet_(); // Keep the existing key/value tab readable as the legacy fallback.
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
@@ -261,25 +358,9 @@ function saveCarRecord_(input) {
       next[key] = value;
     }
     assertImageReferences_(existing, next);
-
-    const rows = sheet.getRange(1, 1, Math.max(sheet.getLastRow(), 1), 2).getDisplayValues();
-    const firstRowByKey = new Map();
-    rows.slice(1).forEach((row, index) => {
-      const key = String(row[0] || '');
-      if (XSWIFT_FIELDS.indexOf(key) !== -1 && !firstRowByKey.has(key)) firstRowByKey.set(key, index + 2);
-    });
-    const missing = [];
-    for (const field of XSWIFT_FIELDS) {
-      const row = firstRowByKey.get(field);
-      if (row) sheet.getRange(row, 2).setNumberFormat('@').setValue(next[field]);
-      else missing.push([field, next[field]]);
-    }
-    if (missing.length) {
-      const start = Math.max(sheet.getLastRow() + 1, 2);
-      const range = sheet.getRange(start, 1, missing.length, 2);
-      range.setNumberFormat('@');
-      range.setValues(missing);
-    }
+    const snapshot = [Utilities.getUuid(), new Date().toISOString()]
+      .concat(XSWIFT_FIELDS.map(field => safeSheetText_(String(next[field] || ''))));
+    appendRows_(getCarHistorySheet_(true), [snapshot]);
     return next;
   } finally {
     lock.releaseLock();

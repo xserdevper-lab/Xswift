@@ -6,7 +6,7 @@ import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncStat
 import { parseLegacyCar } from './legacy-import.js';
 import { loadServiceHistory as loadLocalServiceHistory, saveServiceHistory as saveLocalServiceHistory, createServiceRecord } from './service-history.js';
 import { loadWeatherLocation, saveWeatherLocation, getCurrentLocation, fetchCurrentWeather, describeWeather, isRainCode, weatherIconSvg } from './weather.js?v=1';
-import { applyLanguage, getLanguageLocale, t } from './i18n.js?v=6';
+import { applyLanguage, getLanguageLocale, t } from './i18n.js?v=7';
 import { getUpcomingReminders, formatReminderDate } from './reminders.js?v=2';
 
 const config = window.XSWIFT_CONFIG || {};
@@ -653,7 +653,7 @@ async function pullSheet() {
   finally { sheetControls(false); }
 }
 async function pushSheet() {
-  if (!sheetConnected || !state.record || !window.confirm(t('Overwrite vehicle details and service history in Google Sheets with this device\'s data? Photos will not be uploaded.'))) return;
+  if (!sheetConnected || !state.record || !window.confirm(t('Append vehicle details and service history as new rows in Google Sheets? Previous versions will be kept. Photos remain in Drive.'))) return;
   sheetControls(true); sheetStatus('Uploading to Google Sheets…');
   try {
     const remote = await getRemoteCar();
@@ -661,7 +661,7 @@ async function pushSheet() {
     const results = await Promise.allSettled([saveRemoteCar(next), saveRemoteServiceHistory(serviceHistory)]);
     const failed = results.filter(result => result.status === 'rejected');
     if (failed.length) throw new Error(failed.map(result => result.reason?.message || 'One data section failed').join('; '));
-    sheetStatus('Vehicle details and service history uploaded to Google Sheets.');
+    sheetStatus('Vehicle snapshot and service updates appended to Google Sheets.');
   } catch(e) { sheetStatus(`${t('Upload failed:')} ${t(e.message)}`); }
   finally { sheetControls(false); }
 }

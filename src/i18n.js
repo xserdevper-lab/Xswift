@@ -96,6 +96,18 @@ Object.assign(messages.ko, {
 Object.assign(messages.ja, {
   'Battery':'バッテリー','Battery replacement date':'バッテリー交換日','Battery replacement interval (months)':'バッテリー交換周期（月）'
 });
+Object.assign(messages.th, {
+  'Append vehicle details and service history as new rows in Google Sheets? Previous versions will be kept. Photos remain in Drive.':'เพิ่มข้อมูลรถและประวัติเข้าศูนย์เป็นแถวใหม่ใน Google Sheets หรือไม่? ข้อมูลเดิมจะยังอยู่ และรูปภาพเก็บไว้ใน Drive',
+  'Vehicle snapshot and service updates appended to Google Sheets.':'เพิ่มข้อมูลรถและรายการเปลี่ยนแปลงประวัติเข้าศูนย์ลง Google Sheets แล้ว'
+});
+Object.assign(messages.ko, {
+  'Append vehicle details and service history as new rows in Google Sheets? Previous versions will be kept. Photos remain in Drive.':'차량 정보와 정비 내역을 Google Sheets의 새 행에 추가할까요? 기존 데이터는 유지되며 사진은 Drive에 보관됩니다.',
+  'Vehicle snapshot and service updates appended to Google Sheets.':'차량 스냅샷과 정비 변경 사항을 Google Sheets에 추가했습니다.'
+});
+Object.assign(messages.ja, {
+  'Append vehicle details and service history as new rows in Google Sheets? Previous versions will be kept. Photos remain in Drive.':'車両情報と整備履歴をGoogle Sheetsの新しい行に追加しますか？以前のデータは保持され、写真はDriveに保存されます。',
+  'Vehicle snapshot and service updates appended to Google Sheets.':'車両スナップショットと整備履歴の変更をGoogle Sheetsに追加しました。'
+});
 Object.assign(messages.th, { 'Feels like':'รู้สึกเหมือน','Wind':'ลม' });
 Object.assign(messages.ko, { 'Feels like':'체감 온도','Wind':'바람' });
 Object.assign(messages.ja, { 'Feels like':'体感温度','Wind':'風速' });
