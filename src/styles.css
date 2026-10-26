@@ -338,7 +338,7 @@ h1, h2, h3, p { margin: 0; }
   left: 0;
   z-index: 5;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   width: min(calc(100% - 22px), 420px);
   min-height: 62px;
   margin: 0 auto;
@@ -392,6 +392,8 @@ h1, h2, h3, p { margin: 0; }
 .form-field input:focus, .form-field select:focus, .memo-section textarea:focus { border-color: #85878c; }
 .form-field textarea:focus { border-color: #85878c; }
 .service-history-section { margin-top: 20px; }
+.service-panel { padding-top: 15px; }
+.service-history-section .section-heading h2 { font-size: 16px; font-weight: 650; letter-spacing: -.4px; }
 .service-history-note, .service-history-empty { margin-top: 8px; color: var(--muted); font-size: 11px; line-height: 1.5; }
 .service-history-summary { display: flex; justify-content: space-between; margin-top: 12px; padding: 11px 13px; border-radius: 13px; background: var(--ground); color: var(--muted); font-size: 11px; }
 .service-history-summary strong { color: var(--ink); font-size: 12px; }

@@ -6,7 +6,7 @@ import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncStat
 import { parseLegacyCar } from './legacy-import.js';
 import { loadServiceHistory as loadLocalServiceHistory, saveServiceHistory as saveLocalServiceHistory, createServiceRecord } from './service-history.js';
 import { loadWeatherLocation, saveWeatherLocation, getCurrentLocation, fetchCurrentWeather, describeWeather, isRainCode, weatherIconSvg } from './weather.js?v=1';
-import { applyLanguage, getLanguageLocale, t } from './i18n.js?v=8';
+import { applyLanguage, getLanguageLocale, t } from './i18n.js?v=9';
 import { getUpcomingReminders, formatReminderDate } from './reminders.js?v=2';
 
 const config = window.XSWIFT_CONFIG || {};
