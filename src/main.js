@@ -2,7 +2,7 @@
 import { loginWithPin, getCar as getRemoteCar, saveCar as saveRemoteCar, getServiceHistory as getRemoteServiceHistory, saveServiceHistory as saveRemoteServiceHistory, clearSession } from './xswift-api.js?v=4';
 import { uploadCarImage } from './car-drive.js?v=2';
 import { syncCar, saveSyncedCar } from './car-sync.js?v=4';
-import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=10';
+import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=11';
 import { parseLegacyCar } from './legacy-import.js';
 import { loadServiceHistory as loadLocalServiceHistory, saveServiceHistory as saveLocalServiceHistory, createServiceRecord } from './service-history.js';
 import { loadWeatherLocation, saveWeatherLocation, getCurrentLocation, fetchCurrentWeather, describeWeather, isRainCode, weatherIconSvg } from './weather.js?v=1';

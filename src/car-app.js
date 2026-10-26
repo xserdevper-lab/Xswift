@@ -22,6 +22,16 @@ function formatDate(value) {
   return new Intl.DateTimeFormat(getLanguageLocale(), { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
 }
 
+function parseLocalDateKey(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date : null;
+}
+
 function formatMaintenanceMonth(date) {
   return new Intl.DateTimeFormat(getLanguageLocale(), {month:'long',year:'numeric'}).format(date);
 }
@@ -169,11 +179,9 @@ export function renderCar(record = {}) {
   put('car-battery-date', formatDate(record.batteryDate));
   const batteryProgress = document.getElementById('battery-cycle-progress');
   const batteryProgressFill = document.getElementById('battery-cycle-progress-fill');
-  const batteryDateValue = String(record.batteryDate || '');
-  const batteryDate = /^\d{4}-\d{2}-\d{2}$/.test(batteryDateValue)
-    ? new Date(`${batteryDateValue}T00:00:00`) : null;
+  const batteryDate = parseLocalDateKey(record.batteryDate);
   const batteryInterval = Math.floor(Number(record.batteryIntervalMonths));
-  const hasBatteryCycle = batteryDate && !Number.isNaN(batteryDate.getTime()) && batteryDate.toISOString().slice(0, 10) === batteryDateValue && Number.isFinite(batteryInterval) && batteryInterval >= 1 && batteryInterval <= 60;
+  const hasBatteryCycle = batteryDate && Number.isFinite(batteryInterval) && batteryInterval >= 1 && batteryInterval <= 60;
   if (hasBatteryCycle) {
     const nextBatteryDate = addMonths(batteryDate, batteryInterval);
     const today = new Date();
