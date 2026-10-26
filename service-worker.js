@@ -1,4 +1,4 @@
-const CACHE_NAME = 'xswift-shell-v56';
+const CACHE_NAME = 'xswift-shell-v57';
 const APP_ROOT = new URL('./', self.registration.scope);
 const SHELL_FILES = [
   './',
