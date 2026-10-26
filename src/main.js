@@ -6,7 +6,7 @@ import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncStat
 import { parseLegacyCar } from './legacy-import.js';
 import { loadServiceHistory as loadLocalServiceHistory, saveServiceHistory as saveLocalServiceHistory, createServiceRecord } from './service-history.js';
 import { loadWeatherLocation, saveWeatherLocation, getCurrentLocation, fetchCurrentWeather, describeWeather, isRainCode, weatherIconSvg } from './weather.js?v=1';
-import { applyLanguage, getLanguageLocale, t } from './i18n.js?v=5';
+import { applyLanguage, getLanguageLocale, t } from './i18n.js?v=6';
 import { getUpcomingReminders, formatReminderDate } from './reminders.js?v=2';
 
 const config = window.XSWIFT_CONFIG || {};
@@ -155,7 +155,7 @@ function renderWeather(snapshot = weatherLocation) {
   if (!current) {
     $('weather-temperature').textContent = '—°';
     $('weather-condition').textContent = t('Use your location for a local update');
-    $('weather-feels-like').textContent = t('Feels like —°');
+    $('weather-feels-like').textContent = '—°';
     $('weather-wind').textContent = t('Wind — km/h');
     $('weather-icon').innerHTML = weatherIconSvg('cloud');
     $('weather-updated').textContent = t('Location not enabled');
@@ -170,8 +170,8 @@ function renderWeather(snapshot = weatherLocation) {
   $('weather-icon').setAttribute('aria-label', t(condition.label));
   $('weather-temperature').textContent = `${Math.round(current.temperature)}°`;
   $('weather-condition').textContent = t(condition.label);
-  $('weather-feels-like').textContent = t('Feels like {value}°', { value: Math.round(current.apparentTemperature ?? current.temperature) });
-  $('weather-wind').textContent = t('Wind {value} km/h', { value: Math.round(current.windSpeed) });
+  $('weather-feels-like').textContent = `${Math.round(current.apparentTemperature ?? current.temperature)}°`;
+  $('weather-wind').textContent = `${Math.round(current.windSpeed)} km/h`;
   const updatedAt = new Date(snapshot.fetchedAt || Date.now());
   const updatedTime = new Intl.DateTimeFormat(getLanguageLocale(), { hour: '2-digit', minute: '2-digit' }).format(updatedAt);
   $('weather-updated').textContent = `${t('Updated')} ${updatedTime}`;

@@ -96,6 +96,9 @@ Object.assign(messages.ko, {
 Object.assign(messages.ja, {
   'Battery':'バッテリー','Battery replacement date':'バッテリー交換日','Battery replacement interval (months)':'バッテリー交換周期（月）'
 });
+Object.assign(messages.th, { 'Feels like':'รู้สึกเหมือน','Wind':'ลม' });
+Object.assign(messages.ko, { 'Feels like':'체감 온도','Wind':'바람' });
+Object.assign(messages.ja, { 'Feels like':'体感温度','Wind':'風速' });
 
 let currentLanguage = languages.includes(localStorage.getItem(STORAGE_KEY)) ? localStorage.getItem(STORAGE_KEY) : 'en';
 const sourceText = new WeakMap();
