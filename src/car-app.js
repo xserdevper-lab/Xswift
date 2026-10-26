@@ -167,6 +167,34 @@ export function renderCar(record = {}) {
   put('car-ins-expire', formatDate(record.insExpire));
   put('car-license-expire', formatDate(record.licenseExpire));
   put('car-battery-date', formatDate(record.batteryDate));
+  const batteryProgress = document.getElementById('battery-cycle-progress');
+  const batteryProgressFill = document.getElementById('battery-cycle-progress-fill');
+  const batteryDateValue = String(record.batteryDate || '');
+  const batteryDate = /^\d{4}-\d{2}-\d{2}$/.test(batteryDateValue)
+    ? new Date(`${batteryDateValue}T00:00:00`) : null;
+  const batteryInterval = Math.floor(Number(record.batteryIntervalMonths));
+  const hasBatteryCycle = batteryDate && !Number.isNaN(batteryDate.getTime()) && batteryDate.toISOString().slice(0, 10) === batteryDateValue && Number.isFinite(batteryInterval) && batteryInterval >= 1 && batteryInterval <= 60;
+  if (hasBatteryCycle) {
+    const nextBatteryDate = addMonths(batteryDate, batteryInterval);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const elapsed = Math.max(0, Math.min(100, ((today - batteryDate) / (nextBatteryDate - batteryDate)) * 100));
+    const progressPercent = Math.round(elapsed);
+    const monthDifference = wholeMonthsBetween(today, nextBatteryDate);
+    let batteryStatus;
+    if (today >= nextBatteryDate) batteryStatus = t('Replacement due');
+    else if (monthDifference > 0) batteryStatus = t('{count} {unit} left', { count: monthDifference, unit: t(monthDifference === 1 ? 'month' : 'months') });
+    else batteryStatus = t('Due in less than 1 month');
+    put('battery-cycle-status', batteryStatus);
+    put('battery-cycle-percent', `${progressPercent}%`);
+    if (batteryProgress) batteryProgress.setAttribute('aria-valuenow', String(progressPercent));
+    if (batteryProgressFill) batteryProgressFill.style.width = `${elapsed}%`;
+  } else {
+    put('battery-cycle-status', t('Set in Edit details'));
+    put('battery-cycle-percent', '—');
+    if (batteryProgress) batteryProgress.setAttribute('aria-valuenow', '0');
+    if (batteryProgressFill) batteryProgressFill.style.width = '0%';
+  }
   putStatus('car-tax-status', record.taxExpire);
   putStatus('car-ins-status', record.insExpire);
   putStatus('car-license-status', record.licenseExpire);

@@ -96,6 +96,9 @@ Object.assign(messages.ko, {
 Object.assign(messages.ja, {
   'Battery':'バッテリー','Battery replacement date':'バッテリー交換日','Battery replacement interval (months)':'バッテリー交換周期（月）'
 });
+Object.assign(messages.th, { 'Replacement due':'ถึงกำหนดเปลี่ยนแบตเตอรี่แล้ว','Battery replacement cycle progress':'ความคืบหน้ารอบเปลี่ยนแบตเตอรี่','{count} {unit} left':'เหลือ {count} {unit}' });
+Object.assign(messages.ko, { 'Replacement due':'교체 시기가 되었습니다','Battery replacement cycle progress':'배터리 교체 주기 진행률','{count} {unit} left':'{count}{unit} 남음' });
+Object.assign(messages.ja, { 'Replacement due':'交換時期です','Battery replacement cycle progress':'バッテリー交換周期の進捗','{count} {unit} left':'残り{count}{unit}' });
 Object.assign(messages.th, {
   'Append vehicle details and service history as new rows in Google Sheets? Previous versions will be kept. Photos remain in Drive.':'เพิ่มข้อมูลรถและประวัติเข้าศูนย์เป็นแถวใหม่ใน Google Sheets หรือไม่? ข้อมูลเดิมจะยังอยู่ และรูปภาพเก็บไว้ใน Drive',
   'Vehicle snapshot and service updates appended to Google Sheets.':'เพิ่มข้อมูลรถและรายการเปลี่ยนแปลงประวัติเข้าศูนย์ลง Google Sheets แล้ว'
