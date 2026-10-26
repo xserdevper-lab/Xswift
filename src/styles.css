@@ -156,7 +156,7 @@ h1, h2, h3, p { margin: 0; }
 
 .fuel-section { margin-top: 14px; }
 .weather-card { position: absolute; z-index: 3; top: 9px; left: 9px; width: min(116px, calc(100% - 18px)); margin: 0; padding: 8px; border: 1px solid #ffffff80; border-radius: 13px; background: #ffffff54; box-shadow: 0 3px 10px #11121612; -webkit-backdrop-filter: saturate(125%) blur(3px); backdrop-filter: saturate(125%) blur(3px); }
-.weather-card:has(.weather-safety-alert:not([hidden])) { width: min(230px, calc(100% - 18px)); }
+.weather-refresh-button, .weather-safety-alert, .weather-card-footer, .weather-attribution { display: none !important; }
 .weather-card-header, .weather-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .weather-card .eyebrow { font-size: 7px; letter-spacing: 0; }
 .weather-location-label { display: block; margin-top: 2px; color: var(--muted); font-size: 8px; }
