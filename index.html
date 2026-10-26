@@ -9,9 +9,9 @@
   <link rel="manifest" href="./manifest.webmanifest?v=2">
   <link rel="icon" type="image/svg+xml" href="./icons/xswift-icon.svg?v=2">
   <link rel="apple-touch-icon" href="./icons/xswift-icon.svg?v=2">
-  <link rel="stylesheet" href="./src/styles.css?v=44">
+  <link rel="stylesheet" href="./src/styles.css?v=45">
   <script src="./config.js?v=6"></script>
-  <script type="module" src="./src/main.js?v=43"></script>
+  <script type="module" src="./src/main.js?v=44"></script>
 
 </head>
 <body>
@@ -188,6 +188,15 @@
       </section>
 
       <section id="panel-service" class="tab-panel service-panel" data-tab-panel="service" role="tabpanel" aria-labelledby="tab-service" tabindex="0" hidden>
+        <section class="data-section expense-summary-section" aria-labelledby="expense-summary-title">
+          <div class="section-heading">
+            <div><h2 id="expense-summary-title">Monthly expenses</h2><p id="expense-cycle-date" class="expense-cycle-date"></p></div>
+            <div class="expense-cycle-controls"><button id="expense-cycle-prev" class="button button-outline" type="button" aria-label="Previous period">‹</button><button id="expense-cycle-next" class="button button-outline" type="button" aria-label="Next period">›</button></div>
+          </div>
+          <div class="expense-total-card"><span>Total expenses</span><strong id="expense-total">฿0</strong></div>
+          <div class="expense-breakdown"><div><span id="expense-fuel-label">Fuel</span><strong id="expense-fuel-total">฿0</strong></div><div><span id="expense-service-label">Service & repair</span><strong id="expense-service-total">฿0</strong></div></div>
+          <p id="expense-summary-note" class="service-history-note">Fuel expenses are counted from the next fill you record.</p>
+        </section>
         <section class="data-section service-history-section" aria-labelledby="service-history-title">
           <div class="section-heading">
             <h2 id="service-history-title">Service & repair history</h2>
@@ -238,7 +247,7 @@
           <div class="settings-photo-row"><div><strong>Vehicle photo</strong><small>Stored on this device</small></div><button id="settings-car-photo" class="button button-outline" type="button">Change</button></div>
           <div class="settings-photo-row"><div><strong>Driver's license photo</strong><small>Stored on this device</small></div><button id="settings-license-photo" class="button button-outline" type="button">Change</button></div>
         </div>
-        <section class="settings-card" aria-label="Google Sheets sync" style="padding:16px;margin-top:16px"><h3>Google Sheets</h3><p id="sheet-sync-status" role="status">Not connected. Vehicle data and service history stay on this device.</p><label for="sheet-pin">Connect only when you choose (6-digit private PIN)</label><input id="sheet-pin" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" placeholder="PIN" style="display:block;width:100%;margin:10px 0"><button id="sheet-connect" class="button button-outline" type="button">Connect Google Sheets</button><button id="sheet-sync-button" class="button" type="button" style="display:block;width:100%;margin-top:12px" disabled>↻ Sync data</button><div id="sheet-sync-actions" hidden style="display:grid;gap:10px;margin-top:12px"><button id="sheet-pull" class="button button-outline" type="button">Download from Google Sheets</button><button id="sheet-push" class="button button-outline" type="button">Upload this device's data</button><button id="sheet-disconnect" class="button button-outline" type="button">Disconnect (keep local data)</button></div><p style="font-size:12px;margin-top:12px">Vehicle details and service history transfer only when you choose Download or Upload. Photos are not included.</p></section>
+        <section class="settings-card" aria-label="Google Sheets sync" style="padding:16px;margin-top:16px"><h3>Google Sheets</h3><p id="sheet-sync-status" role="status">Not connected. Vehicle details, service receipts, and fuel history stay on this device.</p><label for="sheet-pin">Connect only when you choose (6-digit private PIN)</label><input id="sheet-pin" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" placeholder="PIN" style="display:block;width:100%;margin:10px 0"><button id="sheet-connect" class="button button-outline" type="button">Connect Google Sheets</button><button id="sheet-sync-button" class="button" type="button" style="display:block;width:100%;margin-top:12px" disabled>↻ Sync data</button><div id="sheet-sync-actions" hidden style="display:grid;gap:10px;margin-top:12px"><button id="sheet-pull" class="button button-outline" type="button">Download from Google Sheets</button><button id="sheet-push" class="button button-outline" type="button">Upload this device's data</button><button id="sheet-disconnect" class="button button-outline" type="button">Disconnect (keep local data)</button></div><p style="font-size:12px;margin-top:12px">Vehicle details, service receipts, and fuel history transfer only when you choose Download or Upload. Photos are not included.</p></section>
         <form id="fuel-settings-form" class="settings-account fuel-settings-form">
           <label for="fuel-limit-input"><strong>Fuel budget limit</strong><small>Set your total fuel budget in THB.</small></label>
           <div class="fuel-limit-control"><div class="fuel-amount-field"><span aria-hidden="true">฿</span><input id="fuel-limit-input" type="number" min="1" step="1" inputmode="numeric" value="5000" disabled></div><button id="save-fuel-limit-button" class="button button-outline" type="submit" disabled>Save</button></div>

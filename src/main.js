@@ -1,18 +1,21 @@
 
-import { loginWithPin, getCar as getRemoteCar, saveCar as saveRemoteCar, getServiceHistory as getRemoteServiceHistory, saveServiceHistory as saveRemoteServiceHistory, clearSession } from './xswift-api.js?v=4';
+import { loginWithPin, getCar as getRemoteCar, saveCar as saveRemoteCar, getServiceHistory as getRemoteServiceHistory, saveServiceHistory as saveRemoteServiceHistory, getFuelHistory as getRemoteFuelHistory, saveFuelHistory as saveRemoteFuelHistory, clearSession } from './xswift-api.js?v=5';
 import { uploadCarImage } from './car-drive.js?v=2';
 import { syncCar, saveSyncedCar } from './car-sync.js?v=4';
 import { renderCar, readCarForm, setCarFormEnabled, setPhotoPreview, setSyncState } from './car-app.js?v=11';
 import { parseLegacyCar } from './legacy-import.js';
 import { loadServiceHistory as loadLocalServiceHistory, saveServiceHistory as saveLocalServiceHistory, createServiceRecord } from './service-history.js';
+import { loadFuelHistory, saveFuelHistory, createFuelRecord, getFuelCycle } from './fuel-history.js';
 import { loadWeatherLocation, saveWeatherLocation, getCurrentLocation, fetchCurrentWeather, describeWeather, isRainCode, weatherIconSvg } from './weather.js?v=1';
-import { applyLanguage, getLanguageLocale, t } from './i18n.js?v=9';
+import { applyLanguage, getLanguageLocale, t } from './i18n.js?v=10';
 import { getUpcomingReminders, formatReminderDate } from './reminders.js?v=2';
 
 const config = window.XSWIFT_CONFIG || {};
 const state = { record: null, toastTimer: 0, installPrompt: null };
 const TOTAL_INSTALLMENTS = 72;
 let serviceHistory = loadLocalServiceHistory();
+let fuelHistory = loadFuelHistory();
+let expenseCycleOffset = 0;
 let weatherLocation = loadWeatherLocation();
 let weatherBusy = false;
 let weatherRefreshTimer = 0;
@@ -148,6 +151,32 @@ function renderServiceHistory() {
     remove.setAttribute('aria-label', `${t('Delete service receipt from')} ${date.textContent}`); remove.addEventListener('click', () => deleteServiceRecord(record.id));
     details.append(lines, total, remove); receipt.append(summary, details); item.append(receipt); list.append(item);
   }
+  renderExpenseSummary();
+}
+
+function shiftFuelCycle(cycle, offset) {
+  const [year, month] = cycle.start.split('-').map(Number);
+  const start = new Date(Date.UTC(year, month - 1 + offset, 25));
+  const end = new Date(Date.UTC(year, month + offset, 24));
+  return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
+}
+
+function renderExpenseSummary() {
+  const current = getFuelCycle(localTodayISO());
+  const cycle = shiftFuelCycle(current, expenseCycleOffset);
+  const dateFormatter = new Intl.DateTimeFormat(getLanguageLocale(), { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  const formatDate = value => dateFormatter.format(new Date(`${value}T00:00:00Z`));
+  const inCycle = date => date >= cycle.start && date <= cycle.end;
+  const fuelTotal = fuelHistory.filter(record => inCycle(record.date)).reduce((total, record) => total + record.amount, 0);
+  const serviceTotal = serviceHistory.filter(record => inCycle(record.date)).reduce((total, record) => total + record.amount, 0);
+  $('expense-cycle-date').textContent = `${formatDate(cycle.start)} – ${formatDate(cycle.end)}`;
+  $('expense-cycle-prev').setAttribute('aria-label', t('Previous period'));
+  $('expense-cycle-next').setAttribute('aria-label', t('Next period'));
+  $('expense-cycle-next').disabled = expenseCycleOffset >= 0;
+  $('expense-total').textContent = serviceCurrency.format(fuelTotal + serviceTotal);
+  $('expense-fuel-total').textContent = serviceCurrency.format(fuelTotal);
+  $('expense-service-total').textContent = serviceCurrency.format(serviceTotal);
+  $('expense-summary-note').textContent = t('Fuel expenses are counted from the next fill you record.');
 }
 
 function renderWeather(snapshot = weatherLocation) {
@@ -373,12 +402,19 @@ async function addFuelExpense(event) {
   const fuelLimit = Math.max(1, Number(state.record.fuelLimit) || 5000);
   const fuelSpent = Math.max(0, Number(state.record.fuelSpent) || 0) + amount;
   const next = { ...state.record, fuelLimit: String(fuelLimit), fuelSpent: String(fuelSpent) };
+  let fuelRecord;
   try {
+    fuelRecord = createFuelRecord({ date: localTodayISO(), amount });
+    fuelHistory = saveFuelHistory([fuelRecord, ...fuelHistory]);
     await saveRecord(next, 'Fuel fill saved.');
     renderVehicle(next);
+    renderExpenseSummary();
     $('fuel-amount-input').value = '';
     $('fuel-dialog').close();
-  } catch {}
+  } catch (error) {
+    if (fuelRecord) fuelHistory = saveFuelHistory(fuelHistory.filter(record => record.id !== fuelRecord.id));
+    if (error?.message) toast(t(error.message));
+  }
 }
 
 async function saveFuelLimit(event) {
@@ -639,29 +675,30 @@ async function connectSheet() {
   finally { sheetControls(false); }
 }
 async function pullSheet() {
-  if (!sheetConnected || !window.confirm(t('Replace vehicle details and service history on this device with Google Sheets data? Local details and history will be overwritten. Photos are not included.'))) return;
+  if (!sheetConnected || !window.confirm(t('Replace vehicle details, service receipts, and fuel history on this device with Google Sheets data? Local data will be overwritten. Photos are not included.'))) return;
   sheetControls(true); sheetStatus('Downloading from Google Sheets…');
   try {
-    const [remote, remoteHistory] = await Promise.all([getRemoteCar(), getRemoteServiceHistory()]);
+    const [remote, remoteHistory, remoteFuelHistory] = await Promise.all([getRemoteCar(), getRemoteServiceHistory(), getRemoteFuelHistory()]);
     const next = { ...state.record, ...Object.fromEntries(Object.entries(remote).filter(([key]) => !['carImageFileId','licenseImageFileId'].includes(key))) };
     await saveSyncedCar(config,next);
     serviceHistory = saveLocalServiceHistory(remoteHistory);
+    fuelHistory = saveFuelHistory(remoteFuelHistory);
     renderServiceHistory();
     await loadVehicle();
-    sheetStatus('Vehicle details and service history downloaded to this device.');
+    sheetStatus('Vehicle details, service receipts, and fuel history downloaded to this device.');
   } catch(e) { sheetStatus(`${t('Download failed:')} ${t(e.message)}`); }
   finally { sheetControls(false); }
 }
 async function pushSheet() {
-  if (!sheetConnected || !state.record || !window.confirm(t('Append vehicle details and service history as new rows in Google Sheets? Previous versions will be kept. Photos remain in Drive.'))) return;
+  if (!sheetConnected || !state.record || !window.confirm(t('Append vehicle details, service receipts, and fuel history to Google Sheets? Previous versions will be kept. Photos remain in Drive.'))) return;
   sheetControls(true); sheetStatus('Uploading to Google Sheets…');
   try {
     const remote = await getRemoteCar();
     const next = { ...remote, ...Object.fromEntries(Object.entries(state.record).filter(([key]) => !['carImageFileId','licenseImageFileId'].includes(key))) };
-    const results = await Promise.allSettled([saveRemoteCar(next), saveRemoteServiceHistory(serviceHistory)]);
+    const results = await Promise.allSettled([saveRemoteCar(next), saveRemoteServiceHistory(serviceHistory), saveRemoteFuelHistory(fuelHistory)]);
     const failed = results.filter(result => result.status === 'rejected');
     if (failed.length) throw new Error(failed.map(result => result.reason?.message || 'One data section failed').join('; '));
-    sheetStatus('Vehicle snapshot and service updates appended to Google Sheets.');
+    sheetStatus('Vehicle snapshot, service receipts, and fuel history appended to Google Sheets.');
   } catch(e) { sheetStatus(`${t('Upload failed:')} ${t(e.message)}`); }
   finally { sheetControls(false); }
 }
@@ -694,10 +731,13 @@ function bindEvents() {
     setToday();
     if (state.record) renderVehicle(state.record);
     renderServiceHistory();
+    renderExpenseSummary();
     renderWeather(weatherLocation);
     if (!$('panel-fuel-prices').hidden) loadFuelPrices();
   });
   $('refresh-fuel-prices').addEventListener('click', loadFuelPrices);
+  $('expense-cycle-prev').addEventListener('click', () => { expenseCycleOffset -= 1; renderExpenseSummary(); });
+  $('expense-cycle-next').addEventListener('click', () => { if (expenseCycleOffset < 0) { expenseCycleOffset += 1; renderExpenseSummary(); } });
   $('weather-location-button').addEventListener('click', () => fetchWeatherFor(null, true));
   $('weather-refresh-button').addEventListener('click', () => fetchWeatherFor(weatherLocation));
   $('sheet-connect').addEventListener('click',connectSheet);

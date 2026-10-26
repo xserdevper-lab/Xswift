@@ -392,6 +392,17 @@ h1, h2, h3, p { margin: 0; }
 .form-field input:focus, .form-field select:focus, .memo-section textarea:focus { border-color: #85878c; }
 .form-field textarea:focus { border-color: #85878c; }
 .service-history-section { margin-top: 20px; }
+.expense-summary-section { margin-top: 20px; }
+.expense-summary-section .section-heading { align-items: center; }
+.expense-summary-section .section-heading h2 { font-size: 16px; font-weight: 650; letter-spacing: -.4px; }
+.expense-cycle-date { margin-top: 4px; color: var(--muted); font-size: 11px; }
+.expense-cycle-controls { display: flex; gap: 6px; }
+.expense-cycle-controls .button { width: 36px; height: 36px; padding: 0; font-size: 20px; line-height: 1; }
+.expense-total-card { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding: 15px; border-radius: 14px; background: var(--ink); color: #fff; font-size: 12px; }
+.expense-total-card strong { font-size: 20px; letter-spacing: -.4px; }
+.expense-breakdown { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.expense-breakdown > div { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; color: var(--muted); font-size: 11px; }
+.expense-breakdown strong { color: var(--ink); font-size: 14px; }
 .service-panel { padding-top: 15px; }
 .service-history-section .section-heading h2 { font-size: 16px; font-weight: 650; letter-spacing: -.4px; }
 .service-history-note, .service-history-empty { margin-top: 8px; color: var(--muted); font-size: 11px; line-height: 1.5; }

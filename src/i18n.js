@@ -74,16 +74,24 @@ Object.assign(messages.ja, {
 });
 
 Object.assign(messages.en, {
+  'Update the Xswift Apps Script code and deploy a new version to sync fuel history.':'Update the Xswift Apps Script code and deploy a new version to sync fuel history.',
+  'Not connected. Vehicle details, service receipts, and fuel history stay on this device.':'Not connected. Vehicle details, service receipts, and fuel history stay on this device.',
   'Installment progress':'Installment progress','{paid} of {total} installments paid':'{paid} of {total} installments paid','{count} installments remaining':'{count} installments remaining','Time remaining':'Time remaining','All installments paid':'All installments paid','year':'year','years':'years','month':'month','months':'months','{years} {yearUnit} {months} {monthUnit}':'{years} {yearUnit} {months} {monthUnit}','{count} {unit}':'{count} {unit}'
 });
 
 Object.assign(messages.th, {
+  'Update the Xswift Apps Script code and deploy a new version to sync fuel history.':'อัปเดตโค้ด Apps Script ของ Xswift และ deploy เวอร์ชันใหม่เพื่อซิงก์ประวัติเติมน้ำมัน',
+  'Not connected. Vehicle details, service receipts, and fuel history stay on this device.':'ยังไม่เชื่อมต่อ ข้อมูลรถ ใบเสร็จเข้าศูนย์ และประวัติเติมน้ำมันอยู่ในอุปกรณ์นี้',
   'Decrease paid installments':'ลดจำนวนงวดที่ชำระแล้ว','Increase paid installments':'เพิ่มจำนวนงวดที่ชำระแล้ว'
 });
 Object.assign(messages.ko, {
+  'Update the Xswift Apps Script code and deploy a new version to sync fuel history.':'주유 기록을 동기화하려면 Xswift Apps Script 코드를 업데이트하고 새 버전으로 배포하세요.',
+  'Not connected. Vehicle details, service receipts, and fuel history stay on this device.':'연결되지 않았습니다. 차량 정보, 정비 영수증 및 주유 기록은 이 기기에 저장됩니다.',
   'Decrease paid installments':'납부 회차 줄이기','Increase paid installments':'납부 회차 늘리기'
 });
 Object.assign(messages.ja, {
+  'Update the Xswift Apps Script code and deploy a new version to sync fuel history.':'給油履歴を同期するには、Xswift Apps Scriptのコードを更新して新しいバージョンをデプロイしてください。',
+  'Not connected. Vehicle details, service receipts, and fuel history stay on this device.':'未接続です。車両情報、整備レシート、給油履歴はこの端末に保存されます。',
   'Decrease paid installments':'支払済み回数を減らす','Increase paid installments':'支払済み回数を増やす'
 });
 
@@ -117,6 +125,39 @@ Object.assign(messages.ja, {
 Object.assign(messages.th, { 'Feels like':'รู้สึกเหมือน','Wind':'ลม' });
 Object.assign(messages.ko, { 'Feels like':'체감 온도','Wind':'바람' });
 Object.assign(messages.ja, { 'Feels like':'体感温度','Wind':'風速' });
+
+Object.assign(messages.en, {
+  'Monthly expenses':'Monthly expenses','Total expenses':'Total expenses','Fuel':'Fuel','Service & repair':'Service & repair',
+  'Previous period':'Previous period','Next period':'Next period','Fuel expenses are counted from the next fill you record.':'Fuel expenses are counted from the next fill you record.',
+  'Replace vehicle details, service receipts, and fuel history on this device with Google Sheets data? Local data will be overwritten. Photos are not included.':'Replace vehicle details, service receipts, and fuel history on this device with Google Sheets data? Local data will be overwritten. Photos are not included.',
+  'Append vehicle details, service receipts, and fuel history to Google Sheets? Previous versions will be kept. Photos remain in Drive.':'Append vehicle details, service receipts, and fuel history to Google Sheets? Previous versions will be kept. Photos remain in Drive.',
+  'Vehicle details, service receipts, and fuel history downloaded to this device.':'Vehicle details, service receipts, and fuel history downloaded to this device.',
+  'Vehicle snapshot, service receipts, and fuel history appended to Google Sheets.':'Vehicle snapshot, service receipts, and fuel history appended to Google Sheets.'
+});
+Object.assign(messages.th, {
+  'Monthly expenses':'สรุปค่าใช้จ่าย','Total expenses':'ค่าใช้จ่ายรวม','Fuel':'ค่าน้ำมัน','Service & repair':'ค่าบำรุงรักษาและซ่อม',
+  'Previous period':'รอบก่อนหน้า','Next period':'รอบถัดไป','Fuel expenses are counted from the next fill you record.':'ยอดน้ำมันเริ่มนับตั้งแต่รายการเติมที่บันทึกครั้งถัดไป',
+  'Replace vehicle details, service receipts, and fuel history on this device with Google Sheets data? Local data will be overwritten. Photos are not included.':'แทนที่ข้อมูลรถ ใบเสร็จเข้าศูนย์ และประวัติเติมน้ำมันในอุปกรณ์นี้ด้วยข้อมูลจาก Google Sheets หรือไม่? ข้อมูลในเครื่องจะถูกแทนที่ ไม่รวมรูปภาพ',
+  'Append vehicle details, service receipts, and fuel history to Google Sheets? Previous versions will be kept. Photos remain in Drive.':'เพิ่มข้อมูลรถ ใบเสร็จเข้าศูนย์ และประวัติเติมน้ำมันเป็นแถวใหม่ใน Google Sheets หรือไม่? ข้อมูลเดิมจะยังอยู่ รูปภาพยังอยู่ใน Drive',
+  'Vehicle details, service receipts, and fuel history downloaded to this device.':'ดาวน์โหลดข้อมูลรถ ใบเสร็จเข้าศูนย์ และประวัติเติมน้ำมันลงอุปกรณ์แล้ว',
+  'Vehicle snapshot, service receipts, and fuel history appended to Google Sheets.':'เพิ่มข้อมูลรถ ใบเสร็จเข้าศูนย์ และประวัติเติมน้ำมันลง Google Sheets แล้ว'
+});
+Object.assign(messages.ko, {
+  'Monthly expenses':'월별 지출','Total expenses':'총 지출','Fuel':'주유비','Service & repair':'정비 및 수리비',
+  'Previous period':'이전 기간','Next period':'다음 기간','Fuel expenses are counted from the next fill you record.':'주유비는 다음 주유 기록부터 집계됩니다',
+  'Replace vehicle details, service receipts, and fuel history on this device with Google Sheets data? Local data will be overwritten. Photos are not included.':'이 기기의 차량 정보, 정비 영수증 및 주유 기록을 Google Sheets 데이터로 바꿀까요? 기기의 기존 데이터는 덮어씁니다. 사진은 포함되지 않습니다.',
+  'Append vehicle details, service receipts, and fuel history to Google Sheets? Previous versions will be kept. Photos remain in Drive.':'차량 정보, 정비 영수증 및 주유 기록을 Google Sheets에 새 행으로 추가할까요? 이전 데이터는 유지됩니다. 사진은 Drive에 있습니다.',
+  'Vehicle details, service receipts, and fuel history downloaded to this device.':'차량 정보, 정비 영수증 및 주유 기록을 이 기기에 다운로드했습니다.',
+  'Vehicle snapshot, service receipts, and fuel history appended to Google Sheets.':'차량 정보, 정비 영수증 및 주유 기록을 Google Sheets에 추가했습니다.'
+});
+Object.assign(messages.ja, {
+  'Monthly expenses':'月ごとの支出','Total expenses':'支出合計','Fuel':'給油','Service & repair':'整備・修理',
+  'Previous period':'前の期間','Next period':'次の期間','Fuel expenses are counted from the next fill you record.':'次回の給油記録から集計します',
+  'Replace vehicle details, service receipts, and fuel history on this device with Google Sheets data? Local data will be overwritten. Photos are not included.':'この端末の車両情報、整備レシート、給油履歴をGoogle Sheetsのデータに置き換えますか？端末内のデータは上書きされます。写真は含まれません。',
+  'Append vehicle details, service receipts, and fuel history to Google Sheets? Previous versions will be kept. Photos remain in Drive.':'車両情報、整備レシート、給油履歴をGoogle Sheetsに新しい行として追加しますか？以前のデータは保持されます。写真はDriveにあります。',
+  'Vehicle details, service receipts, and fuel history downloaded to this device.':'車両情報、整備レシート、給油履歴をこの端末にダウンロードしました。',
+  'Vehicle snapshot, service receipts, and fuel history appended to Google Sheets.':'車両情報、整備レシート、給油履歴をGoogle Sheetsに追加しました。'
+});
 
 let currentLanguage = languages.includes(localStorage.getItem(STORAGE_KEY)) ? localStorage.getItem(STORAGE_KEY) : 'en';
 const sourceText = new WeakMap();

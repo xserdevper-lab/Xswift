@@ -114,6 +114,26 @@ export async function saveServiceHistory(records) {
   return Array.isArray(result.records) ? result.records : records;
 }
 
+export async function getFuelHistory() {
+  try {
+    const result = await apiRequest('getFuelHistory');
+    return Array.isArray(result.records) ? result.records : [];
+  } catch (error) {
+    if (error?.code === 'UNKNOWN_ACTION') throw new XswiftApiError('BACKEND_UPDATE_REQUIRED', 'Update the Xswift Apps Script code and deploy a new version to sync fuel history.');
+    throw error;
+  }
+}
+
+export async function saveFuelHistory(records) {
+  try {
+    const result = await apiRequest('saveFuelHistory', { records });
+    return Array.isArray(result.records) ? result.records : records;
+  } catch (error) {
+    if (error?.code === 'UNKNOWN_ACTION') throw new XswiftApiError('BACKEND_UPDATE_REQUIRED', 'Update the Xswift Apps Script code and deploy a new version to sync fuel history.');
+    throw error;
+  }
+}
+
 function canvasBlob(canvas, quality) {
   return new Promise((resolve, reject) => {
     canvas.toBlob(blob => blob ? resolve(blob) : reject(new XswiftApiError('IMAGE_ERROR', 'Could not prepare this photo.')), 'image/jpeg', quality);

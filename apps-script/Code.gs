@@ -5,9 +5,12 @@ const XSWIFT_CAR_HISTORY_HEADERS = ['eventId', 'savedAt'];
 const XSWIFT_SERVICE_HISTORY_TAB_NAME = 'ประวัติบำรุงรักษา';
 const XSWIFT_SERVICE_EVENTS_TAB_NAME = 'ประวัติบำรุงรักษา (บันทึก)';
 const XSWIFT_SERVICE_EVENT_HEADERS = ['eventId', 'receiptId', 'operation', 'date', 'itemsJson', 'amount', 'createdAt'];
+const XSWIFT_FUEL_EVENTS_TAB_NAME = 'รายการเติมน้ำมัน (บันทึก)';
+const XSWIFT_FUEL_EVENT_HEADERS = ['eventId', 'fillId', 'operation', 'date', 'amount', 'createdAt'];
 const XSWIFT_MAX_SERVICE_RECORDS = 500;
 const XSWIFT_MAX_SERVICE_ITEMS = 50;
 const XSWIFT_MAX_SERVICE_DESCRIPTION_LENGTH = 500;
+const XSWIFT_MAX_FUEL_RECORDS = 5000;
 const XSWIFT_SESSION_MS = 12 * 60 * 60 * 1000;
 const XSWIFT_PIN_ITERATIONS = 5000;
 const XSWIFT_MAX_REQUEST_BYTES = 1800000;
@@ -65,6 +68,8 @@ function doPost(event) {
       case 'saveCar': return json_({ ok: true, record: saveCarRecord_(payload.record || payload) });
       case 'getServiceHistory': return json_({ ok: true, records: loadServiceHistory_() });
       case 'saveServiceHistory': return json_({ ok: true, records: saveServiceHistory_(payload.records) });
+      case 'getFuelHistory': return json_({ ok: true, records: loadFuelHistory_() });
+      case 'saveFuelHistory': return json_({ ok: true, records: saveFuelHistory_(payload.records) });
       case 'uploadImage': return json_({ ok: true, fileId: uploadImage_(payload) });
       case 'getImage': return json_({ ok: true, image: loadImage_(String(payload.fileId || '')) });
       default: throw apiError_('UNKNOWN_ACTION', 'This action is not available.');
@@ -189,6 +194,59 @@ function loadServiceHistory_() {
   return Array.from(records.values());
 }
 
+function loadFuelHistory_() {
+  const sheet = getFuelEventsSheet_(false);
+  if (!sheet || sheet.getLastRow() <= 1) return [];
+  const records = new Map();
+  assertSheetHeaders_(sheet, XSWIFT_FUEL_EVENT_HEADERS, 'fuel event');
+  sheet.getRange(2, 1, sheet.getLastRow() - 1, XSWIFT_FUEL_EVENT_HEADERS.length).getDisplayValues()
+    .filter(row => row[0] && row[1] && (row[2] === 'upsert' || row[2] === 'delete'))
+    .forEach(row => {
+      if (row[2] === 'delete') records.delete(row[1]);
+      else records.set(row[1], { id: row[1], date: row[3], amount: Number(row[4]), createdAt: row[5] });
+    });
+  return Array.from(records.values());
+}
+
+function saveFuelHistory_(input) {
+  if (!Array.isArray(input) || input.length > XSWIFT_MAX_FUEL_RECORDS) throw apiError_('INVALID_DATA', 'Fuel history must contain no more than 5000 records.');
+  const normalized = input.map(record => {
+    if (!record || typeof record !== 'object' || Array.isArray(record)) throw apiError_('INVALID_DATA', 'A fuel record is invalid.');
+    const id = String(record.id || '').trim();
+    const date = String(record.date || '').trim();
+    const amount = Number(record.amount);
+    const createdAt = String(record.createdAt || '');
+    if (!/^[A-Za-z0-9_-]{1,80}$/.test(id) || !isValidServiceDate_(date) || !Number.isFinite(amount) || amount <= 0 || amount > 100000000) {
+      throw apiError_('INVALID_DATA', 'A fuel record has invalid details.');
+    }
+    return { id: id, date: date, amount: Math.round(amount * 100) / 100, createdAt: createdAt };
+  });
+  if (new Set(normalized.map(record => record.id)).size !== normalized.length) throw apiError_('INVALID_DATA', 'Fuel history contains duplicate records.');
+  if (JSON.stringify(normalized).length > 1000000) throw apiError_('INVALID_DATA', 'Fuel history is too large to save.');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const current = new Map(loadFuelHistory_().map(record => [record.id, record]));
+    const desired = new Map(normalized.map(record => [record.id, record]));
+    const rows = [];
+    current.forEach((record, id) => { if (!desired.has(id)) rows.push(fuelEventRow_({ id: id, operation: 'delete', createdAt: new Date().toISOString() })); });
+    desired.forEach((record, id) => {
+      const previous = current.get(id);
+      if (!previous || fuelRecordSignature_(previous) !== fuelRecordSignature_(record)) rows.push(fuelEventRow_({ ...record, operation: 'upsert' }));
+    });
+    if (rows.length) appendRows_(getFuelEventsSheet_(true), rows);
+  } finally { lock.releaseLock(); }
+  return normalized;
+}
+
+function fuelRecordSignature_(record) {
+  return JSON.stringify({ date: String(record.date || ''), amount: Number(record.amount) || 0 });
+}
+
+function fuelEventRow_(record) {
+  return [Utilities.getUuid(), safeSheetText_(String(record.id || '')), safeSheetText_(String(record.operation || 'upsert')), safeSheetText_(String(record.date || '')), safeSheetText_(String(record.amount || 0)), safeSheetText_(String(record.createdAt || new Date().toISOString()))];
+}
+
 function saveServiceHistory_(input) {
   if (!Array.isArray(input) || input.length > XSWIFT_MAX_SERVICE_RECORDS) {
     throw apiError_('INVALID_DATA', 'Service history must contain no more than 500 records.');
@@ -301,6 +359,20 @@ function getServiceEventsSheet_(create) {
   } else {
     assertSheetHeaders_(sheet, XSWIFT_SERVICE_EVENT_HEADERS, 'service event');
   }
+  return sheet;
+}
+
+function getFuelEventsSheet_(create) {
+  const spreadsheet = SpreadsheetApp.openById(XSWIFT_SHEET_ID);
+  let sheet = spreadsheet.getSheetByName(XSWIFT_FUEL_EVENTS_TAB_NAME);
+  if (!sheet && !create) return null;
+  if (!sheet) sheet = spreadsheet.insertSheet(XSWIFT_FUEL_EVENTS_TAB_NAME);
+  if (sheet.getLastRow() === 0) {
+    if (!create) return sheet;
+    const range = sheet.getRange(1, 1, 1, XSWIFT_FUEL_EVENT_HEADERS.length);
+    range.setNumberFormat('@');
+    range.setValues([XSWIFT_FUEL_EVENT_HEADERS]);
+  } else assertSheetHeaders_(sheet, XSWIFT_FUEL_EVENT_HEADERS, 'fuel event');
   return sheet;
 }
 
