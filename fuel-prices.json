@@ -1,6 +1,6 @@
 {
   "status": "success",
-  "last_updated": "21 October 2026",
+  "last_updated": "28 October 2026",
   "data": {
     "ptt": {
       "oil_ptt_gl95": "51.03",
@@ -22,17 +22,17 @@
       "oil_bcp_gl95": "-",
       "oil_bcp_gh95": "42.04",
       "oil_bcp_gh91": "41.67",
-      "oil_bcp_e20": "35.69",
+      "oil_bcp_e20": "33.50",
       "oil_bcp_e85": "31.63",
       "oil_bcp_ds": "43.54",
       "oil_bcp_pds": "50.05",
-      "oil_bcp_dsb20": "37.19",
+      "oil_bcp_dsb20": "33.50",
       "oil_bcp_dsb10": "-",
       "oil_bcp_gs95p": "49.29",
       "oil_bcp_gs99p": "-",
       "oil_bcp_gl95p": "-",
-      "oil_bcp_date": "2026-10-21",
-      "oil_bcp_time": "05:00"
+      "oil_bcp_date": "2026-10-28",
+      "oil_bcp_time": "00:01"
     },
     "shell": {
       "oil_shell_gl95": "-",
@@ -70,17 +70,17 @@
       "oil_caltex_gl95": "50.61",
       "oil_caltex_gh95": "42.04",
       "oil_caltex_gh91": "41.67",
-      "oil_caltex_e20": "35.69",
+      "oil_caltex_e20": "33.50",
       "oil_caltex_e85": "-",
       "oil_caltex_ds": "43.54",
       "oil_caltex_pds": "50.05",
-      "oil_caltex_dsb20": "37.19",
+      "oil_caltex_dsb20": "33.50",
       "oil_caltex_dsb10": "-",
       "oil_caltex_gs95p": "-",
       "oil_caltex_gs99p": "-",
       "oil_caltex_gl95p": "-",
-      "oil_caltex_date": "2026-10-21",
-      "oil_caltex_time": "05:00"
+      "oil_caltex_date": "2026-10-28",
+      "oil_caltex_time": "00:01"
     },
     "irpc": {
       "oil_irpc_gl95": "-",
@@ -102,17 +102,17 @@
       "oil_pt_gl95": "51.53",
       "oil_pt_gh95": "42.04",
       "oil_pt_gh91": "41.67",
-      "oil_pt_e20": "35.69",
+      "oil_pt_e20": "33.50",
       "oil_pt_e85": "-",
       "oil_pt_ds": "43.54",
       "oil_pt_pds": "-",
-      "oil_pt_dsb20": "37.19",
+      "oil_pt_dsb20": "33.50",
       "oil_pt_dsb10": "-",
       "oil_pt_gs95p": "-",
       "oil_pt_gs99p": "-",
       "oil_pt_gl95p": "-",
-      "oil_pt_date": "2026-10-21",
-      "oil_pt_time": "05:00"
+      "oil_pt_date": "2026-10-28",
+      "oil_pt_time": "00:01"
     },
     "susco1": {
       "oil_susco1_gl95": "51.18",
@@ -168,15 +168,15 @@
     "bcp": {
       "gh95": "42.04",
       "gh91": "41.67",
-      "e20": "35.69",
+      "e20": "33.50",
       "e85": "31.63",
       "ds": "43.54",
       "pds": "50.05",
-      "dsb20": "37.19"
+      "dsb20": "33.50"
     },
     "caltex": null,
-    "effectiveDate": "2026-10-28",
-    "bcpAnnouncementDate": "20/10/2569",
-    "bcpAnnouncementTime": "21:40"
+    "effectiveDate": "2026-10-29",
+    "bcpAnnouncementDate": "27/10/2569",
+    "bcpAnnouncementTime": "21:05"
   }
 }
