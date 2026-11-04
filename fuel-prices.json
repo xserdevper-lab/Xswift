@@ -166,17 +166,17 @@
   "tomorrow": {
     "ptt": null,
     "bcp": {
-      "gh95": "41.54",
-      "gh91": "41.17",
-      "e20": "33.50",
+      "gh95": "40.84",
+      "gh91": "40.47",
+      "e20": "32.80",
       "e85": "31.63",
       "ds": "42.54",
       "pds": "49.05",
       "dsb20": "33.50"
     },
     "caltex": null,
-    "effectiveDate": "2026-11-05",
-    "bcpAnnouncementDate": "28/10/2569",
-    "bcpAnnouncementTime": "21:35"
+    "effectiveDate": "2026-11-06",
+    "bcpAnnouncementDate": "04/11/2569",
+    "bcpAnnouncementTime": "20:40"
   }
 }
