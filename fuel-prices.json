@@ -1,6 +1,6 @@
 {
   "status": "success",
-  "last_updated": "11 November 2026",
+  "last_updated": "17 November 2026",
   "data": {
     "ptt": {
       "oil_ptt_gl95": "48.83",
@@ -38,7 +38,7 @@
       "oil_shell_gl95": "-",
       "oil_shell_gh95": "39.84",
       "oil_shell_gh91": "39.47",
-      "oil_shell_e20": "31.50",
+      "oil_shell_e20": "31.30",
       "oil_shell_e85": "-",
       "oil_shell_ds": "40.79",
       "oil_shell_pds": "51.84",
@@ -47,7 +47,7 @@
       "oil_shell_gs95p": "51.84",
       "oil_shell_gs99p": "-",
       "oil_shell_gl95p": "-",
-      "oil_shell_date": "2026-11-11",
+      "oil_shell_date": "2026-11-17",
       "oil_shell_time": "05:00"
     },
     "esso": {
