@@ -1,6 +1,6 @@
 {
   "status": "success",
-  "last_updated": "19 November 2026",
+  "last_updated": "21 November 2026",
   "data": {
     "ptt": {
       "oil_ptt_gl95": "47.63",
@@ -8,15 +8,15 @@
       "oil_ptt_gh91": "37.77",
       "oil_ptt_e20": "30.10",
       "oil_ptt_e85": "30.63",
-      "oil_ptt_ds": "39.99",
+      "oil_ptt_ds": "39.94",
       "oil_ptt_pds": "49.05",
       "oil_ptt_dsb20": "33.50",
       "oil_ptt_dsb10": "-",
       "oil_ptt_gs95p": "47.05",
       "oil_ptt_gs99p": "49.05",
       "oil_ptt_gl95p": "-",
-      "oil_ptt_date": "2026-11-19",
-      "oil_ptt_time": "05:00"
+      "oil_ptt_date": "2026-11-21",
+      "oil_ptt_time": "00:01"
     },
     "bcp": {
       "oil_bcp_gl95": "-",
@@ -24,15 +24,15 @@
       "oil_bcp_gh91": "37.77",
       "oil_bcp_e20": "30.10",
       "oil_bcp_e85": "30.63",
-      "oil_bcp_ds": "39.99",
+      "oil_bcp_ds": "39.94",
       "oil_bcp_pds": "49.05",
       "oil_bcp_dsb20": "33.50",
       "oil_bcp_dsb10": "-",
       "oil_bcp_gs95p": "48.55",
       "oil_bcp_gs99p": "-",
       "oil_bcp_gl95p": "-",
-      "oil_bcp_date": "2026-11-19",
-      "oil_bcp_time": "05:00"
+      "oil_bcp_date": "2026-11-21",
+      "oil_bcp_time": "00:01"
     },
     "shell": {
       "oil_shell_gl95": "-",
@@ -175,7 +175,7 @@
       "dsb20": "33.50"
     },
     "caltex": null,
-    "effectiveDate": "2026-11-21",
+    "effectiveDate": "2026-11-22",
     "bcpAnnouncementDate": "20/11/2569",
     "bcpAnnouncementTime": "14:05"
   }
