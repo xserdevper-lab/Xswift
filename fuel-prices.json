@@ -104,15 +104,15 @@
       "oil_pt_gh91": "37.77",
       "oil_pt_e20": "30.10",
       "oil_pt_e85": "-",
-      "oil_pt_ds": "39.99",
+      "oil_pt_ds": "39.94",
       "oil_pt_pds": "-",
       "oil_pt_dsb20": "33.50",
       "oil_pt_dsb10": "-",
       "oil_pt_gs95p": "-",
       "oil_pt_gs99p": "-",
       "oil_pt_gl95p": "-",
-      "oil_pt_date": "2026-11-19",
-      "oil_pt_time": "05:00"
+      "oil_pt_date": "2026-11-21",
+      "oil_pt_time": "00:01"
     },
     "susco1": {
       "oil_susco1_gl95": "47.78",
@@ -136,14 +136,14 @@
       "oil_pure_gh91": "37.77",
       "oil_pure_e20": "30.10",
       "oil_pure_e85": "-",
-      "oil_pure_ds": "39.99",
+      "oil_pure_ds": "39.94",
       "oil_pure_pds": "-",
       "oil_pure_dsb20": "33.50",
       "oil_pure_dsb10": "-",
       "oil_pure_gs95p": "-",
       "oil_pure_gs99p": "-",
       "oil_pure_gl95p": "-",
-      "oil_pure_date": "2026-11-19",
+      "oil_pure_date": "2026-11-21",
       "oil_pure_time": "05:00"
     },
     "susco2": {
