@@ -40,15 +40,15 @@
       "oil_shell_gh91": "38.27",
       "oil_shell_e20": "30.10",
       "oil_shell_e85": "-",
-      "oil_shell_ds": "39.99",
+      "oil_shell_ds": "39.94",
       "oil_shell_pds": "51.84",
       "oil_shell_dsb20": "33.50",
       "oil_shell_dsb10": "-",
       "oil_shell_gs95p": "51.84",
       "oil_shell_gs99p": "-",
       "oil_shell_gl95p": "-",
-      "oil_shell_date": "2026-11-19",
-      "oil_shell_time": "05:00"
+      "oil_shell_date": "2026-11-21",
+      "oil_shell_time": "00:01"
     },
     "esso": {
       "oil_esso_gl95": "-",
@@ -175,7 +175,7 @@
       "dsb20": "33.50"
     },
     "caltex": null,
-    "effectiveDate": "2026-11-22",
+    "effectiveDate": "2026-11-23",
     "bcpAnnouncementDate": "20/11/2569",
     "bcpAnnouncementTime": "14:05"
   }
