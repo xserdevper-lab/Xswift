@@ -1,6 +1,6 @@
 {
   "status": "success",
-  "last_updated": "21 November 2026",
+  "last_updated": "24 November 2026",
   "data": {
     "ptt": {
       "oil_ptt_gl95": "47.63",
@@ -120,15 +120,15 @@
       "oil_susco1_gh91": "37.77",
       "oil_susco1_e20": "30.10",
       "oil_susco1_e85": "-",
-      "oil_susco1_ds": "39.99",
+      "oil_susco1_ds": "39.94",
       "oil_susco1_pds": "-",
       "oil_susco1_dsb20": "33.50",
       "oil_susco1_dsb10": "-",
       "oil_susco1_gs95p": "-",
       "oil_susco1_gs99p": "-",
       "oil_susco1_gl95p": "-",
-      "oil_susco1_date": "2026-11-19",
-      "oil_susco1_time": "05:00"
+      "oil_susco1_date": "2026-11-24",
+      "oil_susco1_time": "00:01"
     },
     "pure": {
       "oil_pure_gl95": "-",
@@ -170,13 +170,13 @@
       "gh91": "37.77",
       "e20": "30.10",
       "e85": "30.63",
-      "ds": "39.94",
+      "ds": "39.34",
       "pds": "49.05",
-      "dsb20": "33.50"
+      "dsb20": "32.90"
     },
     "caltex": null,
-    "effectiveDate": "2026-11-25",
-    "bcpAnnouncementDate": "20/11/2569",
-    "bcpAnnouncementTime": "14:05"
+    "effectiveDate": "2026-11-26",
+    "bcpAnnouncementDate": "24/11/2569",
+    "bcpAnnouncementTime": "19:55"
   }
 }
